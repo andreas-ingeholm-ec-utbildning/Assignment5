@@ -1,0 +1,40 @@
+﻿<wpfui:UiWindow x:Class="BugReportClient.MainWindow"
+                xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                xmlns:wpfui="http://schemas.lepo.co/wpfui/2022/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                xmlns:wm="clr-namespace:BugReportClient.ViewModels"
+                xmlns:local="clr-namespace:BugReportClient"
+                xmlns:controls="clr-namespace:BugReportClient.Controls"
+                xmlns:converters="clr-namespace:BugReportClient.Converters"
+                mc:Ignorable="d"
+                Title="{Binding MainView.View.Title}"
+                d:Background="#202020"
+                WindowStartupLocation="CenterScreen"
+                FontFamily="Segoe UI Semilight"
+                DataContext="{Binding RelativeSource={RelativeSource Mode=Self}}">
+
+    <Grid>
+        
+        <DockPanel>
+            
+            <StackPanel DockPanel.Dock="Left" Margin="6,6,6,0">
+                <controls:IconButton Icon="FormMultiple48" Command="{Binding MainView.GoToListBugReportsViewCommand}"/>
+                <controls:IconButton Icon="Person48" Command="{Binding MainView.GoToListUsersViewCommand}"/>
+                <controls:IconButton Icon="GlobeLocation24" Command="{Binding MainView.GoToListAddressesViewCommand}"/>
+            </StackPanel>
+
+            <ContentControl Content="{Binding MainView.View}" Margin="0,6,6,6"/>
+
+        </DockPanel>
+
+        <Border Background="#AA000000" Visibility="{Binding MainView.HasPopup, Converter={converters:BoolToVisibility}}">
+            <Border VerticalAlignment="Bottom" Background="#202020" BorderThickness="1,1,1,0" BorderBrush="DimGray" Margin="42,42,22,0" CornerRadius="3">
+                <ContentPresenter Content="{Binding MainView.Popup}"/>
+            </Border>
+        </Border>
+
+    </Grid>
+    
+</wpfui:UiWindow>

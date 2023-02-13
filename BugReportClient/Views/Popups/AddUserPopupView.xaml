@@ -1,0 +1,50 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:popupViews="clr-namespace:BugReportClient.ViewModels.Popups"
+                    xmlns:controls="clr-namespace:BugReportClient.Controls">
+    
+    <DataTemplate DataType="{x:Type popupViews:AddUserViewModel}">
+        <ScrollViewer>
+            <StackPanel Margin="22">
+
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Margin" Value="0,12,0,6"/>
+                    </Style>
+                </StackPanel.Resources>
+
+                <TextBlock Text="Add user:" FontSize="22"/>
+
+                <TextBlock Text="First name:"/>
+                <TextBox Text="{Binding User.FirstName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <TextBlock Text="Last name:"/>
+                <TextBox Text="{Binding User.LastName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <TextBlock Text="Email address:"/>
+                <TextBox Text="{Binding User.EmailAddress, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <TextBlock Text="Address:" FontSize="18" Margin="0,22,0,0"/>
+                <TextBlock Text="Street name:"/>
+                <TextBox Text="{Binding User.Address.StreetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <TextBlock Text="Street number:"/>
+                <TextBox Text="{Binding User.Address.StreetNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <TextBlock Text="Postal code:"/>
+                <TextBox Text="{Binding User.Address.PostalCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <TextBlock Text="City:"/>
+                <TextBox Text="{Binding User.Address.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                    <controls:IconButton Icon="DocumentEdit24" Appearance="Dark" BorderThickness="0" ToolTip="Fill test data" Command="{Binding FillTestDataCommand}" Margin="0,0,42,0"/>
+                    <controls:IconButton Icon="DeleteArrowBack20" ToolTip="Cancel" Command="{Binding CloseCommand}"/>
+                    <controls:IconButton Icon="Send28" Appearance="Primary" ToolTip="Save to db" Command="{Binding SaveCommand}"/>
+                </StackPanel>
+
+            </StackPanel>
+        </ScrollViewer>
+    </DataTemplate>
+    
+</ResourceDictionary>
