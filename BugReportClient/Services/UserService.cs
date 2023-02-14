@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using BugReportClient.Models;
 using BugReportClient.Models.Entities;
@@ -10,7 +11,7 @@ namespace BugReportClient.Services;
 public static class UserService
 {
 
-    private static readonly string _connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\andre\Projects\Assignment5\BugReportClient\Data\db.mdf;Integrated Security=True;Connect Timeout=30";
+    static readonly string _connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\andre\Projects\Assignment5\BugReportClient\Data\db.mdf;Integrated Security=True;Connect Timeout=30";
 
     /// <summary>Saves the user to db.</summary>
     /// <returns>The id of the saved user.</returns>
@@ -63,10 +64,9 @@ public static class UserService
         }
         catch (Exception e)
         {
-
+            Debug.WriteLine(e);
+            throw;
         }
-
-        return 0;
 
     }
 
@@ -97,18 +97,21 @@ public static class UserService
         }
         catch (Exception e)
         {
-
+            Debug.WriteLine(e);
             throw;
         }
 
-
     }
 
-    public static IEnumerable<User> ListUsers()
+    //Used in AddUserViewModel.FillTestData()
+    public static int CachedListCount { get; private set; }
+
+    /// <summary>Lists all users from db.</summary>
+    public static async Task<IEnumerable<User>> ListUsers()
     {
 
         using var connection = new SqlConnection(_connectionString);
-        connection.Open();
+        await connection.OpenAsync();
         using var command = new SqlCommand(
             connection: connection,
             cmdText:
@@ -116,10 +119,12 @@ public static class UserService
             " FROM Users u" +
             " JOIN Addresses a ON u.AddressId = a.id");
 
-        var result = command.ExecuteReader();
+        var result = await command.ExecuteReaderAsync();
 
-        while (result.Read())
-            yield return new User()
+        var list = new List<User>();
+
+        while (await result.ReadAsync())
+            list.Add(new User()
             {
                 Id = result.GetInt32(0),
                 FirstName = result.GetString(1),
@@ -132,10 +137,14 @@ public static class UserService
                     PostalCode = result.GetString(6),
                     City = result.GetString(7),
                 }
-            };
+            });
+
+        CachedListCount = list.Count;
+        return list;
 
     }
 
+    /// <summary>Gets a user from db.</summary>
     public static async Task<User?> GetUser(string emailAddress)
     {
 
@@ -173,6 +182,30 @@ public static class UserService
         }
 
         return user;
+
+    }
+
+    public static async Task DeleteUser(User user)
+    {
+
+        using var connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        using var command = new SqlCommand(
+            connection: connection,
+            cmdText: "DELETE FROM Users WHERE Id = @Id");
+
+        _ = command.Parameters.AddWithValue("@Id", user.Id);
+
+        try
+        {
+            _ = await command.ExecuteNonQueryAsync();
+
+        }
+        catch (Exception e)
+        {
+            Debug.WriteLine(e);
+            throw;
+        }
 
     }
 

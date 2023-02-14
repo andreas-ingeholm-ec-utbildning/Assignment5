@@ -11,27 +11,27 @@
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
-                
+
                 <!--wpfui has a broken template / style for listview, so lets use mahapps-->
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Themes/Dark.Blue.xaml" />
-                
+
                 <wpfui:ThemesDictionary Theme="Dark"/>
                 <wpfui:ControlsDictionary/>
 
                 <ResourceDictionary Source="Views/ListUsersView.xaml"/>
                 <ResourceDictionary Source="Views/ListAddressesView.xaml"/>
                 <ResourceDictionary Source="Views/ListBugReportsView.xaml"/>
-                
+
                 <ResourceDictionary Source="Views/Popups/AddUserPopupView.xaml"/>
                 <ResourceDictionary Source="Views/Popups/AddBugReportPopupView.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
-
+            
             <Style TargetType="ListViewItem" BasedOn="{StaticResource MahApps.Styles.ListViewItem}"/>
             <Style TargetType="ListView" BasedOn="{StaticResource MahApps.Styles.ListView}"/>
-
+            
             <Style TargetType="controls:IconButton" BasedOn="{StaticResource {x:Type wpfui:Button}}"/>
 
         </ResourceDictionary>

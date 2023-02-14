@@ -19,9 +19,9 @@ public partial class AddUserViewModel : PopupViewModel
     [RelayCommand]
     public void FillTestData()
     {
-        User.FirstName = "Test";
+        User.FirstName = "Test" + UserService.CachedListCount;
         User.LastName = "Testsson";
-        User.EmailAddress = "test.testsson@gmail.com";
+        User.EmailAddress = $"test{UserService.CachedListCount}.testsson@gmail.com";
         User.Address.StreetName = "Testå";
         User.Address.StreetNumber = 4;
         User.Address.PostalCode = "111111";

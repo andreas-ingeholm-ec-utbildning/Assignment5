@@ -2,10 +2,11 @@
 
 namespace BugReportClient.ViewModels;
 
-public class ViewModel : ObservableObject
+public partial class ViewModel : ObservableObject
 {
 
     public MainViewModel Parent { get; private set; } = null!;
+    [ObservableProperty] private bool isBusy;
 
     public ViewModel SetParent(MainViewModel parent)
     {

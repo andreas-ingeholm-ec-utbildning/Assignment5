@@ -7,13 +7,13 @@
     <DataTemplate DataType="{x:Type wm:ListUsersViewModel}">
         <DockPanel>
 
-            <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Orientation="Horizontal">
-                <controls:IconButton Icon="ArrowClockwise48" Command="{Binding ReloadCommand}" ToolTip="Reload list" Margin="0,0,42,0"/>
-                <controls:IconButton Icon="Delete48" Appearance="Danger" ToolTip="Delete the user"/>
+            <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,12,-3,0">
+                <controls:IconButton Icon="ArrowClockwise48" Command="{Binding ReloadCommand}" ToolTip="Reload list"/>
+                <controls:IconButton Icon="Delete48" Appearance="Danger" ToolTip="Delete the user" IsEnabled="{Binding CanDelete}" Command="{Binding DeleteUserCommand}" CommandParameter="{Binding ElementName=list, Path=SelectedItem}"/>
                 <controls:IconButton Icon="Add28" Command="{Binding OpenAddPopupCommand}" ToolTip="Add a user"/>
             </StackPanel>
             
-            <ListView ItemsSource="{Binding List}">
+            <ListView x:Name="list" ItemsSource="{Binding List}" SelectedIndex="{Binding SelectedUser, TargetNullValue=0}">
 
                 <ListView.View>
                     <GridView>

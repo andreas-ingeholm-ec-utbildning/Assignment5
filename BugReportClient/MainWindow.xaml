@@ -19,20 +19,27 @@
         
         <DockPanel>
             
-            <StackPanel DockPanel.Dock="Left" Margin="6,6,6,0">
-                <controls:IconButton Icon="FormMultiple48" Command="{Binding MainView.GoToListBugReportsViewCommand}"/>
-                <controls:IconButton Icon="Person48" Command="{Binding MainView.GoToListUsersViewCommand}"/>
-                <controls:IconButton Icon="GlobeLocation24" Command="{Binding MainView.GoToListAddressesViewCommand}"/>
+            <StackPanel DockPanel.Dock="Left" Margin="6,6,12,0">
+                <controls:IconButton Icon="FormMultiple48" Command="{Binding MainView.GoToListBugReportsViewCommand}" ToolTip="Bug reports"/>
+                <controls:IconButton Icon="Person48" Command="{Binding MainView.GoToListUsersViewCommand}" ToolTip="Users"/>
+                <controls:IconButton Icon="GlobeLocation24" Command="{Binding MainView.GoToListAddressesViewCommand}" ToolTip="Addresses"/>
             </StackPanel>
 
-            <ContentControl Content="{Binding MainView.View}" Margin="0,6,6,6"/>
+            <ContentControl Content="{Binding MainView.View}" Margin="0,12,12,12"/>
 
         </DockPanel>
 
-        <Border Background="#AA000000" Visibility="{Binding MainView.HasPopup, Converter={converters:BoolToVisibility}}">
+        <Border Background="#AA000000" d:Visibility="Collapsed" Visibility="{Binding MainView.HasPopup, Converter={converters:BoolToVisibility}}">
             <Border VerticalAlignment="Bottom" Background="#202020" BorderThickness="1,1,1,0" BorderBrush="DimGray" Margin="42,42,22,0" CornerRadius="3">
-                <ContentPresenter Content="{Binding MainView.Popup}"/>
+                <Grid>
+                    <ContentPresenter Content="{Binding MainView.Popup}"/>
+                    <wpfui:Button Content="X" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,7,16,12" Command="{Binding MainView.ClosePopupCommand}" ToolTip="Close / discard"/>
+                </Grid>
             </Border>
+        </Border>
+
+        <Border Background="#AA000000" d:Visibility="Collapsed" Visibility="{Binding MainView.View.IsBusy, Converter={converters:BoolToVisibility}}">
+            <wpfui:ProgressRing HorizontalAlignment="Center" VerticalAlignment="Center" IsIndeterminate="True"/>
         </Border>
 
     </Grid>
