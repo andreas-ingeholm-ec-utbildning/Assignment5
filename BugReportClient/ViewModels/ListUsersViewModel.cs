@@ -35,7 +35,7 @@ public partial class ListUsersViewModel : ViewModel
         IsBusy = true;
         selectedIndex ??= SelectedUser ?? 0;
 
-        List = await UserService.ListUsers();
+        List = await UserService.GetAllAsync();
         if (List.Any())
             SelectedUser = Math.Clamp(selectedIndex ?? 0, 0, List.Count() - 1);
 
@@ -57,7 +57,7 @@ public partial class ListUsersViewModel : ViewModel
         var i = SelectedUser;
 
         IsBusy = true;
-        await UserService.DeleteUser(user);
+        await UserService.DeleteAsync(user);
 
         Reload(i);
 

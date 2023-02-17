@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BugReportClient.Models;
 using BugReportClient.Models.Entities;
+using Dapper;
 using Microsoft.Data.SqlClient;
+using static Dapper.SqlMapper;
 
 namespace BugReportClient.Services;
 
@@ -13,200 +14,149 @@ public static class UserService
 
     static readonly string _connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\andre\Projects\Assignment5\BugReportClient\Data\db.mdf;Integrated Security=True;Connect Timeout=30";
 
-    /// <summary>Saves the user to db.</summary>
-    /// <returns>The id of the saved user.</returns>
-    /// <exception cref="InvalidOperationException"/>
-    public static async Task Save(User user)
+    #region Save
+
+    public static async Task SaveAsync(User user)
     {
 
-        var entity = new UserEntity
+        if (await GetAsync(user.Id) is User existing)
+            await UpdateAsync(user, existing);
+        else
+            await CreateAsync(user);
+
+    }
+
+    static async Task CreateAsync(User user)
+    {
+
+        var entity = new UserEntity()
         {
+            Id = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
             EmailAddress = user.EmailAddress,
-            AddressId = await GetOrSaveAddress(user.Address)
+            AddressId = await SaveAsync(new AddressEntity()
+            {
+                StreetName = user.StreetName,
+                StreetNumber = user.StreetNumber,
+                City = user.City,
+                PostalCode = user.PostalCode,
+            })
         };
 
-        await SaveUser(entity);
+        using var connection = new SqlConnection(_connectionString);
+        _ = await connection.ExecuteAsync(
+            " IF NOT EXISTS(SELECT Id FROM Users WHERE EmailAddress = @EmailAddress) " +
+            " INSERT INTO Users VALUES(@FirstName, @LastName, @EmailAddress, @AddressId)", entity);
 
     }
 
-    /// <summary>Saves the address to db.</summary>
-    /// <returns>The id of the saved address.</returns>
-    /// <exception cref="InvalidOperationException"/>
-    static async Task<int> GetOrSaveAddress(Address address)
+    static async Task UpdateAsync(User user, User existingUser)
+    {
+
+        var entity = new UserEntity()
+        {
+            Id = user.Id,
+            FirstName = GetValue(user.FirstName, existingUser.FirstName),
+            LastName = GetValue(user.LastName, existingUser.LastName),
+            EmailAddress = GetValue(user.EmailAddress, existingUser.EmailAddress),
+            AddressId = await SaveAsync(new AddressEntity()
+            {
+                StreetName = GetValue(user.StreetName, existingUser.StreetName),
+                StreetNumber = user.StreetNumber ?? existingUser.StreetNumber,
+                City = GetValue(user.City, existingUser.City),
+                PostalCode = GetValue(user.PostalCode, existingUser.PostalCode),
+            })
+        };
+
+        using var connection = new SqlConnection(_connectionString);
+        _ = await connection.ExecuteAsync(
+            " UPDATE Users SET FirstName = @FirstName, LastName = @LastName, EmailAddress = @EmailAddress, AddressId = @AddressId" +
+            " WHERE Id = @Id", entity);
+
+        static string GetValue(string newValue, string oldValue) =>
+            string.IsNullOrEmpty(newValue)
+            ? oldValue
+            : newValue;
+
+    }
+
+    /// <summary>Saves the <see cref="AddressEntity"/>, if it does already not exist.</summary>
+    /// <returns>Created / existing id of address in databse.</returns>
+    static async Task<int> SaveAsync(AddressEntity entity)
     {
 
         using var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand(
-            connection: connection,
-            cmdText:
+        return await connection.ExecuteScalarAsync<int>(
             " IF NOT EXISTS (SELECT Id FROM Addresses WHERE StreetName = @StreetName AND PostalCode = @PostalCode AND City = @City)" +
             " INSERT INTO Addresses OUTPUT INSERTED.Id VALUES (@StreetName, @StreetNumber, @PostalCode, @City)" +
             " ELSE" +
-            " SELECT Id FROM Addresses WHERE StreetName = @StreetName AND PostalCode = @PostalCode AND City = @City");
-
-        _ = command.Parameters.AddWithValue("@StreetName", address.StreetName);
-        _ = command.Parameters.AddWithValue("@StreetNumber", address.StreetNumber);
-        _ = command.Parameters.AddWithValue("@PostalCode", address.PostalCode);
-        _ = command.Parameters.AddWithValue("@City", address.City);
-
-        try
-        {
-            var result = await command.ExecuteScalarAsync();
-
-            return result is int i
-                ? i
-                : throw new InvalidOperationException("An unknown error occured.\n\nExpected: (int)\nReceived: " + result?.ToString() ?? "(null)");
-
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e);
-            throw;
-        }
+            " SELECT Id FROM Addresses WHERE StreetName = @StreetName AND PostalCode = @PostalCode AND City = @City", entity);
 
     }
 
-    /// <summary>Saves the user to db.</summary>
-    /// <returns>The id of the saved user.</returns>
-    /// <exception cref="InvalidOperationException"/>
-    static async Task SaveUser(UserEntity user)
-    {
+    #endregion
+    #region Get
 
-        using var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
-
-        using var command = new SqlCommand(
-        connection: connection,
-        cmdText:
-            " IF NOT EXISTS(SELECT Id FROM Users WHERE EmailAddress = @EmailAddress) " +
-            " INSERT INTO Users OUTPUT INSERTED.Id VALUES(@FirstName, @LastName, @EmailAddress, @AddressId)");
-
-        _ = command.Parameters.AddWithValue("@FirstName", user.FirstName);
-        _ = command.Parameters.AddWithValue("@LastName", user.LastName);
-        _ = command.Parameters.AddWithValue("@EmailAddress", user.EmailAddress);
-        _ = command.Parameters.AddWithValue("@AddressId", user.AddressId);
-
-        try
-        {
-            _ = await command.ExecuteNonQueryAsync();
-
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e);
-            throw;
-        }
-
-    }
-
-    //Used in AddUserViewModel.FillTestData()
     public static int CachedListCount { get; private set; }
-
-    /// <summary>Lists all users from db.</summary>
-    public static async Task<IEnumerable<User>> ListUsers()
+    public static async Task<IEnumerable<User>> GetAllAsync()
     {
 
         using var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
-        using var command = new SqlCommand(
-            connection: connection,
-            cmdText:
+        var users = await connection.QueryAsync<User>(
             " SELECT u.Id, u.FirstName, u.LastName, u.EmailAddress, a.StreetName, a.StreetNumber, a.PostalCode, a.City" +
             " FROM Users u" +
             " JOIN Addresses a ON u.AddressId = a.id");
 
-        var result = await command.ExecuteReaderAsync();
-
-        var list = new List<User>();
-
-        while (await result.ReadAsync())
-            list.Add(new User()
-            {
-                Id = result.GetInt32(0),
-                FirstName = result.GetString(1),
-                LastName = result.GetString(2),
-                EmailAddress = result.GetString(3),
-                Address = new Address()
-                {
-                    StreetName = result.GetString(4),
-                    StreetNumber = result.GetInt32(5),
-                    PostalCode = result.GetString(6),
-                    City = result.GetString(7),
-                }
-            });
-
-        CachedListCount = list.Count;
-        return list;
+        CachedListCount = users.Count();
+        return users;
 
     }
 
-    /// <summary>Gets a user from db.</summary>
-    public static async Task<User?> GetUser(string emailAddress)
+    public static async Task<User?> GetAsync(string emailAddress)
     {
 
+        if (string.IsNullOrEmpty(emailAddress))
+            return null;
+
         using var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
-        using var command = new SqlCommand(
-            connection: connection,
-            cmdText:
+        return await connection.QueryFirstAsync<User>(
             " SELECT u.Id, u.FirstName, u.LastName, u.EmailAddress, a.StreetName, a.StreetNumber, a.PostalCode, a.City" +
             " FROM Users u" +
             " JOIN Addresses a ON u.AddressId = a.id" +
-            " WHERE u.Email = @Email");
-
-        _ = command.Parameters.AddWithValue("@EmailAddress", emailAddress);
-
-        var result = await command.ExecuteReaderAsync();
-
-        if (!result.HasRows)
-            return null;
-
-        var user = new User();
-        while (await result.ReadAsync())
-        {
-            user.Id = result.GetInt32(0);
-            user.FirstName = result.GetString(1);
-            user.LastName = result.GetString(2);
-            user.EmailAddress = result.GetString(3);
-            user.Address = new Address()
-            {
-                StreetName = result.GetString(4),
-                StreetNumber = result.GetInt32(5),
-                PostalCode = result.GetString(6),
-                City = result.GetString(7),
-            };
-        }
-
-        return user;
+            " WHERE u.Email = @Email", new { EmailAddress = emailAddress });
 
     }
 
-    public static async Task DeleteUser(User user)
+    public static async Task<User?> GetAsync(int id)
     {
 
         using var connection = new SqlConnection(_connectionString);
-        await connection.OpenAsync();
-        using var command = new SqlCommand(
-            connection: connection,
-            cmdText: "DELETE FROM Users WHERE Id = @Id");
-
-        _ = command.Parameters.AddWithValue("@Id", user.Id);
-
-        try
-        {
-            _ = await command.ExecuteNonQueryAsync();
-
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e);
-            throw;
-        }
+        return await connection.QueryFirstAsync<User?>(
+            " SELECT u.Id, u.FirstName, u.LastName, u.EmailAddress, a.StreetName, a.StreetNumber, a.PostalCode, a.City" +
+            " FROM Users u" +
+            " JOIN Addresses a ON u.AddressId = a.id" +
+            " WHERE u.Id = @Id", new { Id = id });
 
     }
+
+    #endregion
+    #region Delete
+
+    public static Task DeleteAsync(User user) =>
+        DeleteAsync(user?.EmailAddress ?? null);
+
+    public static async Task DeleteAsync(string emailAddress)
+    {
+
+        if (string.IsNullOrEmpty(emailAddress))
+            return;
+
+        using var connection = new SqlConnection(_connectionString);
+        _ = await connection.ExecuteAsync("DELETE FROM Users WHERE EmailAddress = @EmailAddress", new { EmailAddress = emailAddress });
+
+    }
+
+    #endregion
 
 }

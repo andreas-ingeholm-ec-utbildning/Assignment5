@@ -26,16 +26,16 @@
 
                 <TextBlock Text="Address:" FontSize="18" Margin="0,22,0,0"/>
                 <TextBlock Text="Street name:"/>
-                <TextBox Text="{Binding User.Address.StreetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+                <TextBox Text="{Binding User.StreetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
 
                 <TextBlock Text="Street number:"/>
-                <TextBox Text="{Binding User.Address.StreetNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+                <TextBox Text="{Binding User.StreetNumber, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
 
                 <TextBlock Text="Postal code:"/>
-                <TextBox Text="{Binding User.Address.PostalCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+                <TextBox Text="{Binding User.PostalCode, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
 
                 <TextBlock Text="City:"/>
-                <TextBox Text="{Binding User.Address.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+                <TextBox Text="{Binding User.City, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
                     <controls:IconButton Icon="DocumentEdit24" Appearance="Dark" BorderThickness="0" ToolTip="Fill test data" Command="{Binding FillTestDataCommand}" Margin="0,0,42,0"/>

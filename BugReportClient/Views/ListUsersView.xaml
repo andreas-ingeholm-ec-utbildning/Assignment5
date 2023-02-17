@@ -21,10 +21,10 @@
                         <GridViewColumn Header="First name:" DisplayMemberBinding="{Binding FirstName}" Width="200"/>
                         <GridViewColumn Header="Last name:" DisplayMemberBinding="{Binding LastName}" Width="200"/>
                         <GridViewColumn Header="Email address:" DisplayMemberBinding="{Binding EmailAddress}" Width="200"/>
-                        <GridViewColumn Header="Street name:" DisplayMemberBinding="{Binding Address.StreetName}" Width="200"/>
-                        <GridViewColumn Header="Street number:" DisplayMemberBinding="{Binding Address.StreetNumber}" Width="200"/>
-                        <GridViewColumn Header="Postal code:" DisplayMemberBinding="{Binding Address.PostalCode}" Width="200"/>
-                        <GridViewColumn Header="City:" DisplayMemberBinding="{Binding Address.City}" Width="200"/>
+                        <GridViewColumn Header="Street name:" DisplayMemberBinding="{Binding StreetName}" Width="200"/>
+                        <GridViewColumn Header="Street number:" DisplayMemberBinding="{Binding StreetNumber}" Width="200"/>
+                        <GridViewColumn Header="Postal code:" DisplayMemberBinding="{Binding PostalCode}" Width="200"/>
+                        <GridViewColumn Header="City:" DisplayMemberBinding="{Binding City}" Width="200"/>
                     </GridView>
                 </ListView.View>
 

@@ -9,6 +9,9 @@ public partial class User : ObservableValidator
     [ObservableProperty] public string firstName = string.Empty;
     [ObservableProperty] public string lastName = string.Empty;
     [ObservableProperty] public string emailAddress = string.Empty;
-    [ObservableProperty] public Address address = null!;
+    [ObservableProperty] public string streetName = string.Empty;
+    [ObservableProperty] public int? streetNumber;
+    [ObservableProperty] public string postalCode = string.Empty;
+    [ObservableProperty] public string city = string.Empty;
 
 }
