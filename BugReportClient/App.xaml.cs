@@ -6,6 +6,4 @@ namespace BugReportClient;
 public partial class App : Application
 {
 
-
-
 }

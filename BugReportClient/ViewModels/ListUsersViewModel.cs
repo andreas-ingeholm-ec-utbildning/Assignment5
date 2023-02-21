@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BugReportClient.Models;
+using BugReportClient.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -29,14 +32,16 @@ public partial class ListUsersViewModel : ViewModel
     public async void Reload(int? selectedIndex)
     {
 
-        //IsBusy = true;
-        //selectedIndex ??= SelectedUser ?? 0;
+        IsBusy = true;
+        selectedIndex ??= SelectedUser ?? 0;
 
-        //List = await UserService.GetAllAsync();
-        //if (List.Any())
-        //    SelectedUser = Math.Clamp(selectedIndex ?? 0, 0, List.Count() - 1);
+        List = await UserService.GetAllAsync();
+        if (List.Any())
+            SelectedUser = Math.Clamp(selectedIndex ?? 0, 0, List.Count() - 1);
+        else
+            SelectedUser = null;
 
-        //IsBusy = false;
+        IsBusy = false;
 
     }
 
@@ -45,18 +50,18 @@ public partial class ListUsersViewModel : ViewModel
         Parent.OpenAddUserPopup(callbackOnClose: Reload);
 
     [RelayCommand]
-    public async void DeleteUser(User user)
+    public async void DeleteSelectedUser()
     {
 
-        //if (SelectedUser is null)
-        //    return;
+        if (List is null || SelectedUser is null)
+            return;
 
-        //var i = SelectedUser;
+        var i = SelectedUser;
 
-        //IsBusy = true;
-        //await UserService.DeleteAsync(user);
+        IsBusy = true;
+        await UserService.DeleteAsync(List.ElementAt(SelectedUser.Value));
 
-        //Reload(i);
+        Reload(i);
 
     }
 

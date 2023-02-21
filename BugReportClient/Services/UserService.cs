@@ -30,7 +30,7 @@ public static class UserService
     {
 
         var entity = user.ToEntity();
-        entity.Address = (await FindAddressEntityInDB(user)) ?? user.ToAddressEntity();
+        entity.Address = (await GetAddressEntityAsync(user)) ?? user.ToAddressEntity();
 
         _ = _context.Add(entity);
         _ = await _context.SaveChangesAsync();
@@ -49,7 +49,7 @@ public static class UserService
         user.PostalCode ??= existingUser.PostalCode;
 
         var entity = user.ToEntity();
-        entity.Address = (await FindAddressEntityInDB(user)) ?? user.ToAddressEntity();
+        entity.Address = (await GetAddressEntityAsync(user)) ?? user.ToAddressEntity();
 
         _ = _context.Update(entity);
         _ = await _context.SaveChangesAsync();
@@ -79,8 +79,11 @@ public static class UserService
         ? ((await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == id))?.ToModel())
         : null;
 
-    static async Task<AddressEntity?> FindAddressEntityInDB(this User user) =>
+    static async Task<AddressEntity?> GetAddressEntityAsync(this User user) =>
         await _context.Addresses.FirstOrDefaultAsync(a => a.StreetName == user.StreetName && a.StreetNumber == user.StreetNumber && a.City == user.City && a.PostalCode == user.PostalCode);
+
+    static async Task<UserEntity?> GetUserEntityAsync(string emailAddress) =>
+        await _context.Users.FirstOrDefaultAsync(a => a.EmailAddress == emailAddress);
 
     #endregion
     #region Delete
@@ -94,11 +97,11 @@ public static class UserService
         if (string.IsNullOrEmpty(emailAddress))
             return;
 
-        var user = await GetAsync(emailAddress);
+        var user = await GetUserEntityAsync(emailAddress);
         if (user is not null)
         {
             _ = _context.Remove(user);
-            _ = _context.SaveChangesAsync();
+            _ = await _context.SaveChangesAsync();
         }
 
     }
@@ -113,6 +116,7 @@ public static class UserService
         entity is not null
         ? new()
         {
+            Id = entity.Id,
             FirstName = entity.FirstName,
             LastName = entity.LastName,
             EmailAddress = entity.EmailAddress,

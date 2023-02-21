@@ -9,12 +9,18 @@
 
             <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,12,-3,0">
                 <controls:IconButton Icon="ArrowClockwise48" Command="{Binding ReloadCommand}" ToolTip="Reload list"/>
-                <controls:IconButton Icon="Delete48" Appearance="Danger" ToolTip="Delete the user" IsEnabled="{Binding CanDelete}" Command="{Binding DeleteUserCommand}" CommandParameter="{Binding ElementName=list, Path=SelectedItem}"/>
+                <controls:IconButton Icon="Delete48" Appearance="Danger" ToolTip="Delete the user" IsEnabled="{Binding CanDelete}" Command="{Binding DeleteSelectedUserCommand}"/>
                 <controls:IconButton Icon="Add28" Command="{Binding OpenAddPopupCommand}" ToolTip="Add a user"/>
             </StackPanel>
             
             <ListView x:Name="list" ItemsSource="{Binding List}" SelectedIndex="{Binding SelectedUser, TargetNullValue=0}">
 
+                <ListView.Resources>
+                    <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">
+                        <Setter Property="TextBlock.ToolTip" Value="{Binding RelativeSource={RelativeSource Mode=TemplatedParent}, Path=Id}"/>
+                    </Style>
+                </ListView.Resources>
+                
                 <ListView.View>
                     <GridView>
                         <GridViewColumn Header="ID:" DisplayMemberBinding="{Binding Id}" Width="42"/>
