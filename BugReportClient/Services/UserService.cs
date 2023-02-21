@@ -1,18 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BugReportClient.Contexts;
 using BugReportClient.Models;
 using BugReportClient.Models.Entities;
-using Dapper;
-using Microsoft.Data.SqlClient;
-using static Dapper.SqlMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace BugReportClient.Services;
 
 public static class UserService
 {
 
-    static readonly string _connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\andre\Projects\Assignment5\BugReportClient\Data\db.mdf;Integrated Security=True;Connect Timeout=30";
+    static readonly DataContext _context = new();
 
     #region Save
 
@@ -29,122 +29,64 @@ public static class UserService
     static async Task CreateAsync(User user)
     {
 
-        var entity = new UserEntity()
-        {
-            Id = user.Id,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            EmailAddress = user.EmailAddress,
-            AddressId = await SaveAsync(new AddressEntity()
-            {
-                StreetName = user.StreetName,
-                StreetNumber = user.StreetNumber,
-                City = user.City,
-                PostalCode = user.PostalCode,
-            })
-        };
+        var entity = user.ToEntity();
+        entity.Address = (await FindAddressEntityInDB(user)) ?? user.ToAddressEntity();
 
-        using var connection = new SqlConnection(_connectionString);
-        _ = await connection.ExecuteAsync(
-            " IF NOT EXISTS(SELECT Id FROM Users WHERE EmailAddress = @EmailAddress) " +
-            " INSERT INTO Users VALUES(@FirstName, @LastName, @EmailAddress, @AddressId)", entity);
+        _ = _context.Add(entity);
+        _ = await _context.SaveChangesAsync();
 
     }
 
     static async Task UpdateAsync(User user, User existingUser)
     {
 
-        var entity = new UserEntity()
-        {
-            Id = user.Id,
-            FirstName = GetValue(user.FirstName, existingUser.FirstName),
-            LastName = GetValue(user.LastName, existingUser.LastName),
-            EmailAddress = GetValue(user.EmailAddress, existingUser.EmailAddress),
-            AddressId = await SaveAsync(new AddressEntity()
-            {
-                StreetName = GetValue(user.StreetName, existingUser.StreetName),
-                StreetNumber = user.StreetNumber ?? existingUser.StreetNumber,
-                City = GetValue(user.City, existingUser.City),
-                PostalCode = GetValue(user.PostalCode, existingUser.PostalCode),
-            })
-        };
+        user.FirstName ??= existingUser.FirstName;
+        user.LastName ??= existingUser.LastName;
+        user.EmailAddress ??= existingUser.EmailAddress;
+        user.StreetName ??= existingUser.StreetName;
+        user.StreetNumber ??= existingUser.StreetNumber;
+        user.City ??= existingUser.City;
+        user.PostalCode ??= existingUser.PostalCode;
 
-        using var connection = new SqlConnection(_connectionString);
-        _ = await connection.ExecuteAsync(
-            " UPDATE Users SET FirstName = @FirstName, LastName = @LastName, EmailAddress = @EmailAddress, AddressId = @AddressId" +
-            " WHERE Id = @Id", entity);
+        var entity = user.ToEntity();
+        entity.Address = (await FindAddressEntityInDB(user)) ?? user.ToAddressEntity();
 
-        static string GetValue(string newValue, string oldValue) =>
-            string.IsNullOrEmpty(newValue)
-            ? oldValue
-            : newValue;
-
-    }
-
-    /// <summary>Saves the <see cref="AddressEntity"/>, if it does already not exist.</summary>
-    /// <returns>Created / existing id of address in databse.</returns>
-    static async Task<int> SaveAsync(AddressEntity entity)
-    {
-
-        using var connection = new SqlConnection(_connectionString);
-        return await connection.ExecuteScalarAsync<int>(
-            " IF NOT EXISTS (SELECT Id FROM Addresses WHERE StreetName = @StreetName AND PostalCode = @PostalCode AND City = @City)" +
-            " INSERT INTO Addresses OUTPUT INSERTED.Id VALUES (@StreetName, @StreetNumber, @PostalCode, @City)" +
-            " ELSE" +
-            " SELECT Id FROM Addresses WHERE StreetName = @StreetName AND PostalCode = @PostalCode AND City = @City", entity);
+        _ = _context.Update(entity);
+        _ = await _context.SaveChangesAsync();
 
     }
 
     #endregion
     #region Get
 
+    /// <summary>Used by AddUserPopup for filling test data.</summary>
     public static int CachedListCount { get; private set; }
+
     public static async Task<IEnumerable<User>> GetAllAsync()
     {
-
-        using var connection = new SqlConnection(_connectionString);
-        var users = await connection.QueryAsync<User>(
-            " SELECT u.Id, u.FirstName, u.LastName, u.EmailAddress, a.StreetName, a.StreetNumber, a.PostalCode, a.City" +
-            " FROM Users u" +
-            " JOIN Addresses a ON u.AddressId = a.id");
-
-        CachedListCount = users.Count();
-        return users;
-
+        var list = (await _context.Users.Include(u => u.Address).ToArrayAsync()).Select(ToModel).OfType<User>();
+        CachedListCount = list.Count();
+        return list;
     }
 
-    public static async Task<User?> GetAsync(string emailAddress)
-    {
+    public static async Task<User?> GetAsync(string emailAddress) =>
+        !string.IsNullOrEmpty(emailAddress)
+        ? ((await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.EmailAddress == emailAddress))?.ToModel())
+        : null;
 
-        if (string.IsNullOrEmpty(emailAddress))
-            return null;
+    public static async Task<User?> GetAsync(Guid id) =>
+        id != Guid.Empty
+        ? ((await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == id))?.ToModel())
+        : null;
 
-        using var connection = new SqlConnection(_connectionString);
-        return await connection.QueryFirstAsync<User>(
-            " SELECT u.Id, u.FirstName, u.LastName, u.EmailAddress, a.StreetName, a.StreetNumber, a.PostalCode, a.City" +
-            " FROM Users u" +
-            " JOIN Addresses a ON u.AddressId = a.id" +
-            " WHERE u.Email = @Email", new { EmailAddress = emailAddress });
-
-    }
-
-    public static async Task<User?> GetAsync(int id)
-    {
-
-        using var connection = new SqlConnection(_connectionString);
-        return await connection.QueryFirstAsync<User?>(
-            " SELECT u.Id, u.FirstName, u.LastName, u.EmailAddress, a.StreetName, a.StreetNumber, a.PostalCode, a.City" +
-            " FROM Users u" +
-            " JOIN Addresses a ON u.AddressId = a.id" +
-            " WHERE u.Id = @Id", new { Id = id });
-
-    }
+    static async Task<AddressEntity?> FindAddressEntityInDB(this User user) =>
+        await _context.Addresses.FirstOrDefaultAsync(a => a.StreetName == user.StreetName && a.StreetNumber == user.StreetNumber && a.City == user.City && a.PostalCode == user.PostalCode);
 
     #endregion
     #region Delete
 
     public static Task DeleteAsync(User user) =>
-        DeleteAsync(user?.EmailAddress ?? null);
+        DeleteAsync(user.EmailAddress);
 
     public static async Task DeleteAsync(string emailAddress)
     {
@@ -152,10 +94,40 @@ public static class UserService
         if (string.IsNullOrEmpty(emailAddress))
             return;
 
-        using var connection = new SqlConnection(_connectionString);
-        _ = await connection.ExecuteAsync("DELETE FROM Users WHERE EmailAddress = @EmailAddress", new { EmailAddress = emailAddress });
+        var user = await GetAsync(emailAddress);
+        if (user is not null)
+        {
+            _ = _context.Remove(user);
+            _ = _context.SaveChangesAsync();
+        }
 
     }
+
+    #endregion
+    #region To/from entity/model
+
+    static Address ToModel(this AddressEntity entity) =>
+        new() { Id = entity.Id, StreetName = entity.StreetName, StreetNumber = entity.StreetNumber, City = entity.City, PostalCode = entity.PostalCode };
+
+    static User? ToModel(this UserEntity? entity) =>
+        entity is not null
+        ? new()
+        {
+            FirstName = entity.FirstName,
+            LastName = entity.LastName,
+            EmailAddress = entity.EmailAddress,
+            StreetName = entity.Address?.StreetName ?? string.Empty,
+            StreetNumber = entity.Address?.StreetNumber ?? -1,
+            City = entity.Address?.City ?? string.Empty,
+            PostalCode = entity.Address?.PostalCode ?? string.Empty
+        }
+        : null;
+
+    static AddressEntity ToAddressEntity(this User user) =>
+        new() { StreetName = user.StreetName, StreetNumber = user.StreetNumber, City = user.City, PostalCode = user.PostalCode };
+
+    static UserEntity ToEntity(this User user) =>
+        new() { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, EmailAddress = user.EmailAddress };
 
     #endregion
 

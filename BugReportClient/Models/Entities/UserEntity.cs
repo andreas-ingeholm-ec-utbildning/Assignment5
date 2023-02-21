@@ -1,12 +1,30 @@
-﻿namespace BugReportClient.Models.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 
+namespace BugReportClient.Models.Entities;
+
+[Index(nameof(EmailAddress), IsUnique = true)]
 public class UserEntity
 {
 
-    public int Id { get; set; }
-    public string FirstName { get; set; } = string.Empty;
-    public string LastName { get; set; } = string.Empty;
-    public string EmailAddress { get; set; } = string.Empty;
-    public int AddressId { get; set; }
+    [Required]
+    public Guid Id { get; set; } = Guid.NewGuid();
+
+    [Required]
+    public string FirstName { get; set; } = null!;
+
+    [Required]
+    public string LastName { get; set; } = null!;
+
+    [Required]
+    public string EmailAddress { get; set; } = null!;
+
+    [Required]
+    public Guid AddressId { get; set; }
+    public AddressEntity Address { get; set; } = null!;
+
+    public ICollection<BugReportEntity> BugReports { get; set; } = new HashSet<BugReportEntity>();
 
 }

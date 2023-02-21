@@ -1,14 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BugReportClient.Models;
 
 public partial class Address : ObservableValidator
 {
 
-    [ObservableProperty] public int id;
+    [ObservableProperty] public Guid id;
 
     [ObservableProperty] public string streetName = string.Empty;
-    [ObservableProperty] public int streetNumber;
+    [ObservableProperty] public int? streetNumber;
     [ObservableProperty] public string postalCode;
     [ObservableProperty] public string city = string.Empty;
 
