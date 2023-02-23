@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BugReportClient.Contexts;
 
-internal class DataContext : DbContext
+public class DataContext : DbContext
 {
 
     static readonly string _connectionString = @"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename=C:\Users\andre\Projects\Assignment5\BugReportClient\Data\db.mdf;Integrated Security=True;Connect Timeout=30";

@@ -13,7 +13,7 @@
                 <controls:IconButton Icon="Add28" Command="{Binding OpenAddPopupCommand}" ToolTip="Add a user"/>
             </StackPanel>
             
-            <ListView x:Name="list" ItemsSource="{Binding List}" SelectedIndex="{Binding SelectedUser, TargetNullValue=0}">
+            <ListView x:Name="list" ItemsSource="{Binding Users}" SelectedIndex="{Binding SelectedUser, TargetNullValue=0}">
 
                 <ListView.Resources>
                     <Style TargetType="ListViewItem" BasedOn="{StaticResource {x:Type ListViewItem}}">

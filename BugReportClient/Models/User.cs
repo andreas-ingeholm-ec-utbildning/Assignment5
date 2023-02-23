@@ -15,4 +15,7 @@ public partial class User : ObservableValidator
     [ObservableProperty] public string postalCode = string.Empty;
     [ObservableProperty] public string city = string.Empty;
 
+    public override string ToString() =>
+        $"{FirstName} {LastName}, {EmailAddress}";
+
 }

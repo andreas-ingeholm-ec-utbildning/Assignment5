@@ -7,11 +7,11 @@
         <DockPanel>
 
             <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Orientation="Horizontal">
-                <controls:IconButton Icon="Delete48" Appearance="Danger"/>
-                <controls:IconButton Icon="Add28"/>
+                <controls:IconButton Icon="Delete48" Appearance="Danger" IsEnabled="{Binding CanDelete}" Command="{Binding DeleteSelectedReportCommand}"/>
+                <controls:IconButton Icon="Add28" Command="{Binding AddReportCommand}"/>
             </StackPanel>
 
-            <ListView>
+            <ListView ItemsSource="{Binding Reports}" SelectedIndex="{Binding SelectedReport, Mode=TwoWay}">
 
                 <ListView.View>
                     <GridView>

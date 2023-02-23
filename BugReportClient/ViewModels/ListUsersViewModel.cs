@@ -17,7 +17,7 @@ public partial class ListUsersViewModel : ViewModel
     public override string Title => "Bug reports - Users";
 
     [ObservableProperty]
-    public IEnumerable<User> list = null!;
+    public IEnumerable<User> users = null!;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanDelete))]
@@ -35,11 +35,11 @@ public partial class ListUsersViewModel : ViewModel
         IsBusy = true;
         selectedIndex ??= SelectedUser ?? 0;
 
-        List = await UserService.GetAllAsync();
-        if (List.Any())
-            SelectedUser = Math.Clamp(selectedIndex ?? 0, 0, List.Count() - 1);
-        else
-            SelectedUser = null;
+        Users = await UserService.GetAllAsync();
+        SelectedUser =
+            Users.Any()
+            ? Math.Clamp(selectedIndex ?? 0, 0, Users.Count() - 1)
+            : null;
 
         IsBusy = false;
 
@@ -53,13 +53,13 @@ public partial class ListUsersViewModel : ViewModel
     public async void DeleteSelectedUser()
     {
 
-        if (List is null || SelectedUser is null)
+        if (Users is null || SelectedUser is null)
             return;
 
         var i = SelectedUser;
 
         IsBusy = true;
-        await UserService.DeleteAsync(List.ElementAt(SelectedUser.Value));
+        await UserService.DeleteAsync(Users.ElementAt(SelectedUser.Value));
 
         Reload(i);
 

@@ -1,13 +1,14 @@
 ﻿using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace BugReportClient.Models;
 
-public class BugReport
+public partial class BugReport : ObservableValidator
 {
 
-    public Guid Id { get; set; }
-    public User User { get; set; } = null!;
-    public string Title { get; set; } = string.Empty;
-    public string Content { get; set; } = string.Empty;
+    [ObservableProperty] public Guid id;
+    [ObservableProperty] public string title = string.Empty;
+    [ObservableProperty] public string content = string.Empty;
+    [ObservableProperty] public User user = null!;
 
 }

@@ -2,18 +2,45 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BugReportClient.Contexts;
 using BugReportClient.Models;
 using BugReportClient.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using static BugReportClient.Services.DBService;
 
 namespace BugReportClient.Services;
 
 public static class UserService
 {
 
-    static readonly DataContext _context = new();
+    #region Get
 
+    /// <summary>Used by AddUserPopup for filling test data.</summary>
+    public static int CachedListCount { get; private set; }
+
+    public static async Task<IEnumerable<User>> GetAllAsync()
+    {
+        var list = (await Context.Users.Include(u => u.Address).ToArrayAsync()).Select(ToModel).OfType<User>();
+        CachedListCount = list.Count();
+        return list;
+    }
+
+    public static async Task<User?> GetAsync(string emailAddress) =>
+        !string.IsNullOrEmpty(emailAddress)
+        ? ((await Context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.EmailAddress == emailAddress))?.ToModel())
+        : null;
+
+    public static async Task<User?> GetAsync(Guid id) =>
+        id != Guid.Empty
+        ? ((await Context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == id))?.ToModel())
+        : null;
+
+    public static async Task<UserEntity?> GetEntityAsync(string emailAddress) =>
+        await Context.Users.FirstOrDefaultAsync(a => a.EmailAddress == emailAddress);
+
+    public static async Task<UserEntity?> GetEntityAsync(User user) =>
+              await Context.Users.FirstOrDefaultAsync(a => a.Id == user.Id);
+
+    #endregion
     #region Save
 
     public static async Task SaveAsync(User user)
@@ -30,10 +57,10 @@ public static class UserService
     {
 
         var entity = user.ToEntity();
-        entity.Address = (await GetAddressEntityAsync(user)) ?? user.ToAddressEntity();
+        entity.Address = (await AddressService.GetEntityAsync(user)) ?? user.ToAddressEntity();
 
-        _ = _context.Add(entity);
-        _ = await _context.SaveChangesAsync();
+        _ = Context.Add(entity);
+        _ = await Context.SaveChangesAsync();
 
     }
 
@@ -49,41 +76,12 @@ public static class UserService
         user.PostalCode ??= existingUser.PostalCode;
 
         var entity = user.ToEntity();
-        entity.Address = (await GetAddressEntityAsync(user)) ?? user.ToAddressEntity();
+        entity.Address = (await AddressService.GetEntityAsync(user)) ?? user.ToAddressEntity();
 
-        _ = _context.Update(entity);
-        _ = await _context.SaveChangesAsync();
+        _ = Context.Update(entity);
+        _ = await Context.SaveChangesAsync();
 
     }
-
-    #endregion
-    #region Get
-
-    /// <summary>Used by AddUserPopup for filling test data.</summary>
-    public static int CachedListCount { get; private set; }
-
-    public static async Task<IEnumerable<User>> GetAllAsync()
-    {
-        var list = (await _context.Users.Include(u => u.Address).ToArrayAsync()).Select(ToModel).OfType<User>();
-        CachedListCount = list.Count();
-        return list;
-    }
-
-    public static async Task<User?> GetAsync(string emailAddress) =>
-        !string.IsNullOrEmpty(emailAddress)
-        ? ((await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.EmailAddress == emailAddress))?.ToModel())
-        : null;
-
-    public static async Task<User?> GetAsync(Guid id) =>
-        id != Guid.Empty
-        ? ((await _context.Users.Include(u => u.Address).FirstOrDefaultAsync(u => u.Id == id))?.ToModel())
-        : null;
-
-    static async Task<AddressEntity?> GetAddressEntityAsync(this User user) =>
-        await _context.Addresses.FirstOrDefaultAsync(a => a.StreetName == user.StreetName && a.StreetNumber == user.StreetNumber && a.City == user.City && a.PostalCode == user.PostalCode);
-
-    static async Task<UserEntity?> GetUserEntityAsync(string emailAddress) =>
-        await _context.Users.FirstOrDefaultAsync(a => a.EmailAddress == emailAddress);
 
     #endregion
     #region Delete
@@ -97,11 +95,11 @@ public static class UserService
         if (string.IsNullOrEmpty(emailAddress))
             return;
 
-        var user = await GetUserEntityAsync(emailAddress);
+        var user = await GetEntityAsync(emailAddress);
         if (user is not null)
         {
-            _ = _context.Remove(user);
-            _ = await _context.SaveChangesAsync();
+            _ = Context.Remove(user);
+            _ = await Context.SaveChangesAsync();
         }
 
     }
@@ -109,29 +107,23 @@ public static class UserService
     #endregion
     #region To/from entity/model
 
-    static Address ToModel(this AddressEntity entity) =>
-        new() { Id = entity.Id, StreetName = entity.StreetName, StreetNumber = entity.StreetNumber, City = entity.City, PostalCode = entity.PostalCode };
+    public static User? ToModel(this UserEntity? entity) =>
+         entity is not null
+         ? new()
+         {
+             Id = entity.Id,
+             FirstName = entity.FirstName,
+             LastName = entity.LastName,
+             EmailAddress = entity.EmailAddress,
+             StreetName = entity.Address?.StreetName ?? string.Empty,
+             StreetNumber = entity.Address?.StreetNumber ?? -1,
+             City = entity.Address?.City ?? string.Empty,
+             PostalCode = entity.Address?.PostalCode ?? string.Empty
+         }
+         : null;
 
-    static User? ToModel(this UserEntity? entity) =>
-        entity is not null
-        ? new()
-        {
-            Id = entity.Id,
-            FirstName = entity.FirstName,
-            LastName = entity.LastName,
-            EmailAddress = entity.EmailAddress,
-            StreetName = entity.Address?.StreetName ?? string.Empty,
-            StreetNumber = entity.Address?.StreetNumber ?? -1,
-            City = entity.Address?.City ?? string.Empty,
-            PostalCode = entity.Address?.PostalCode ?? string.Empty
-        }
-        : null;
-
-    static AddressEntity ToAddressEntity(this User user) =>
-        new() { StreetName = user.StreetName, StreetNumber = user.StreetNumber, City = user.City, PostalCode = user.PostalCode };
-
-    static UserEntity ToEntity(this User user) =>
-        new() { Id = user.Id, FirstName = user.FirstName, LastName = user.LastName, EmailAddress = user.EmailAddress };
+    public static UserEntity ToEntity(this User model) =>
+        new() { Id = model.Id, FirstName = model.FirstName, LastName = model.LastName, EmailAddress = model.EmailAddress };
 
     #endregion
 

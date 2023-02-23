@@ -10,7 +10,7 @@ public partial class Address : ObservableValidator
 
     [ObservableProperty] public string streetName = string.Empty;
     [ObservableProperty] public int? streetNumber;
-    [ObservableProperty] public string postalCode;
+    [ObservableProperty] public string postalCode = string.Empty;
     [ObservableProperty] public string city = string.Empty;
 
 }

@@ -5,6 +5,7 @@
              xmlns:popupViews="clr-namespace:BugReportClient.ViewModels.Popups"
              xmlns:wpfui="http://schemas.lepo.co/wpfui/2022/xaml"
              xmlns:controls="clr-namespace:BugReportClient.Controls"
+             xmlns:mahApps="http://metro.mahapps.com/winfx/xaml/controls"
              StartupUri="MainWindow.xaml">
     
     <Application.Resources>
@@ -28,10 +29,13 @@
                 <ResourceDictionary Source="Views/Popups/AddBugReportPopupView.xaml"/>
 
             </ResourceDictionary.MergedDictionaries>
-            
+
             <Style TargetType="ListViewItem" BasedOn="{StaticResource MahApps.Styles.ListViewItem}"/>
-            <Style TargetType="ListView" BasedOn="{StaticResource MahApps.Styles.ListView}"/>
-            
+
+            <Style TargetType="ListView" BasedOn="{StaticResource MahApps.Styles.ListView}">
+                <Setter Property="mahApps:ControlsHelper.CornerRadius" Value="3"/>
+            </Style>
+
             <Style TargetType="controls:IconButton" BasedOn="{StaticResource {x:Type wpfui:Button}}"/>
 
         </ResourceDictionary>

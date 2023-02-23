@@ -23,7 +23,7 @@ public partial class AddUserViewModel : PopupViewModel
         User.LastName = "Testsson";
         User.EmailAddress = $"test{UserService.CachedListCount}.testsson@gmail.com";
         User.StreetName = "Testå";
-        User.StreetNumber = 4;
+        User.StreetNumber = UserService.CachedListCount;
         User.PostalCode = "111111";
         User.City = "Teststad";
     }
