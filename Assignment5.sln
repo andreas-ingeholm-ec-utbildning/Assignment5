@@ -5,6 +5,8 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BugReportClient", "BugReportClient\BugReportClient.csproj", "{9685C80E-379D-441B-A61C-087117F3B9B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IssuesClient", "IssuesClient\IssuesClient.csproj", "{C5BBD18B-58EC-4991-AF71-E6E4DE56F228}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9685C80E-379D-441B-A61C-087117F3B9B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9685C80E-379D-441B-A61C-087117F3B9B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9685C80E-379D-441B-A61C-087117F3B9B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5BBD18B-58EC-4991-AF71-E6E4DE56F228}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5BBD18B-58EC-4991-AF71-E6E4DE56F228}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5BBD18B-58EC-4991-AF71-E6E4DE56F228}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5BBD18B-58EC-4991-AF71-E6E4DE56F228}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
