@@ -1,37 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace IssuesClient.Models.Entities;
 
-[Index(nameof(EmailAddress), IsUnique = true)]
 public class UserEntity
 {
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [Required] public Guid Id { get; set; } = Guid.NewGuid();
 
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public string EmailAddress { get; set; } = null!;
-    public int PhoneNumber { get; set; }
+    [Required] public string EmailAddress { get; set; } = null!;
+    [Required] public byte[]? Password { get; private set; }
+    [Required] public byte[]? SecurityStamp { get; private set; }
 
-    public string ConcurrencyStamp { get; set; } = Guid.NewGuid().ToString();
-    public string Password { get; set; } = null!;
-    public bool IsValidated { get; set; }
-    public string SecurityStamp { get; set; } = null!;
+    //public ICollection<ReportEntity> Reports { get; set; } = new HashSet<ReportEntity>();
+    public ICollection<UserProfileEntity> Profiles { get; set; } = new HashSet<UserProfileEntity>();
 
-    public string NormalizedEmailAddress => EmailAddress.ToUpper();
+    public void SetSecurePassword(string password)
+    {
+        using var hmac = new HMACSHA512();
+        SecurityStamp = hmac.Key;
+        Password = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+    }
 
-    public ICollection<ReportEntity> Reports { get; set; } = new HashSet<ReportEntity>();
+    public bool ValidatePassword(string password)
+    {
+
+        if (SecurityStamp is null || !SecurityStamp.Any())
+            return false;
+
+        using var hmac = new HMACSHA512();
+        hmac.Key = SecurityStamp;
+        return hmac.ComputeHash(Encoding.UTF8.GetBytes(password)) == Password;
+
+    }
+
+    public static implicit operator UserEntity(User model) =>
+        new()
+        {
+            Id = model.Id,
+            EmailAddress = model.EmailAddress,
+        };
 
     public static implicit operator User(UserEntity entity) =>
         new()
         {
             Id = entity.Id,
-            FirstName = entity.FirstName,
-            LastName = entity.LastName,
             EmailAddress = entity.EmailAddress,
-            PhoneNumber = entity.PhoneNumber,
         };
 
 }

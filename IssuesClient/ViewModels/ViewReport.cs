@@ -10,7 +10,7 @@ public partial class ViewReport : ViewModel
 {
 
     [ObservableProperty] private bool m_isCommentBoxVisible;
-    [ObservableProperty, Required] private bool m_comment;
+    [ObservableProperty, Required] private string m_comment;
     [ObservableProperty, Required] private User m_user = null!;
 
     [RelayCommand]
@@ -18,6 +18,8 @@ public partial class ViewReport : ViewModel
 
     [RelayCommand]
     void HideCommentBox() => IsCommentBoxVisible = false;
+
+    public override string Title => "Issue browser - " + "Report";
 
     [RelayCommand]
     void AddComment()

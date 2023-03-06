@@ -9,10 +9,18 @@
         <ResourceDictionary>
 
             <ResourceDictionary.MergedDictionaries>
+
                 <wpfui:ControlsDictionary/>
                 <wpfui:ThemesDictionary Theme="Dark"/>
+
+                <ResourceDictionary Source="Views/AddReport.xaml"/>
+                <ResourceDictionary Source="Views/AddUser.xaml"/>
+                <ResourceDictionary Source="Views/ListReports.xaml"/>
+                <ResourceDictionary Source="Views/ListUsers.xaml"/>
+                <ResourceDictionary Source="Views/ViewReport.xaml"/>
+                
             </ResourceDictionary.MergedDictionaries>
-            
+
         </ResourceDictionary>
     </Application.Resources>
     

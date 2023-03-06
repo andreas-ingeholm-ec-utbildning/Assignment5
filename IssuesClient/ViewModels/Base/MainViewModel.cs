@@ -8,6 +8,9 @@ namespace IssuesClient.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
 
+    public MainViewModel() =>
+        OpenDefault();
+
     [ObservableProperty]
     private ViewModel m_viewModel = null!;
 
@@ -33,18 +36,19 @@ public partial class MainViewModel : ObservableObject
     void GoBack()
     {
         if (redirectCallers.TryPop(out var viewModel))
+        {
             OpenInternal(viewModel);
+            viewModel.OnRedirectDone();
+        }
         else
             OpenDefault();
     }
 
-    void OpenDefault() =>
-        Open<ListReports>();
-
     void OpenInternal(ViewModel viewModel, object? parameter = null, bool isRedirect = false) =>
         ViewModel = viewModel.Initialize(parameter, isRedirect, (t, p) => Redirect(t, p, viewModel), GoBack);
 
+    void OpenDefault() => Open<ListReports>();
     [RelayCommand] public void ViewReports() => Open<ListReports>();
-    [RelayCommand] public void ViewUsers() => Open<ListReports>();
+    [RelayCommand] public void ViewUsers() => Open<ListUsers>();
 
 }

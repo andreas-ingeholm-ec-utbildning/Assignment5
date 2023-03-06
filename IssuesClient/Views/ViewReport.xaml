@@ -3,8 +3,8 @@
                     xmlns:wpfui="http://schemas.lepo.co/wpfui/2022/xaml"
                     xmlns:viewModels="clr-namespace:IssuesClient.ViewModels">
 
-    <DataTemplate DataType="{x:Type viewModels:AddReport}">
-        
+    <DataTemplate DataType="{x:Type viewModels:ViewReport}">
+
     </DataTemplate>
-    
+
 </ResourceDictionary>

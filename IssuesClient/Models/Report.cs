@@ -11,6 +11,7 @@ public class Report
 
     public ReportStatus Status { get; set; }
 
+    public string Title { get; set; } = null!;
     public List<Comment> Comments { get; set; } = null!;
     public User User { get; set; } = null!;
 

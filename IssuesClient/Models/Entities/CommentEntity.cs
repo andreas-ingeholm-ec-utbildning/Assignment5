@@ -7,15 +7,15 @@ namespace IssuesClient.Models.Entities;
 public class CommentEntity
 {
 
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [Required] public Guid Id { get; set; } = Guid.NewGuid();
     public bool IsRemoved { get; set; }
 
     [Required] public string Content { get; set; } = null!;
 
     [Required] public Guid UserId { get; set; }
-    public User User { get; set; } = null!;
+    public UserEntity User { get; set; } = null!;
 
-    [Required] public ICollection<ReportEntity> Reports { get; set; } = new HashSet<ReportEntity>();
+    public ICollection<ReportEntity> Reports { get; set; } = new HashSet<ReportEntity>();
 
     public static implicit operator Comment(CommentEntity entity) =>
         new()

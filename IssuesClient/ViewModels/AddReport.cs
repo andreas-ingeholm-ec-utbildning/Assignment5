@@ -8,6 +8,8 @@ namespace IssuesClient.ViewModels;
 public partial class AddReport : ViewModel
 {
 
+    public override string Title => "Issue browser - Add report";
+
     [ObservableProperty, Required] private User m_user = null!;
     [ObservableProperty, Required] private string m_comment = null!;
 

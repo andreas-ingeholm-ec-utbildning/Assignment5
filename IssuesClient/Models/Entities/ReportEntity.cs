@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace IssuesClient.Models.Entities;
 
@@ -14,12 +15,17 @@ public enum ReportStatus
 public class ReportEntity
 {
 
-    [Required] public Guid Id { get; set; } = Guid.NewGuid();
+    [Required]
+    public Guid Id { get; set; } = Guid.NewGuid();
 
-    [Required] public ReportStatus Status { get; set; }
-    [Required] public IEnumerable<CommentEntity> Comments { get; set; } = null!;
+    [Required]
+    public ReportStatus Status { get; set; }
 
-    [Required] public Guid UserId { get; set; }
+    [Required]
+    [ForeignKey("Comments")]
+    public IEnumerable<CommentEntity> CommentIds { get; set; } = null!;
+
+    [Required]
     public UserEntity User { get; set; } = null!;
 
     public static implicit operator Report(ReportEntity entity) =>
