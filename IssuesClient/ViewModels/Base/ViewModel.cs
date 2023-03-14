@@ -9,10 +9,13 @@ public abstract partial class ViewModel : ObservableValidator
 
     public virtual string Title { get; } = "Issue browser";
 
+    public virtual void OnOpen()
+    { }
+
     #region Redirect
 
     public bool IsRedirect { get; private set; }
-    public object? Parameter { get; private set; }
+    public object? RedirectParameter { get; private set; }
 
     /// <summary>Redirects to a different view, then returns back to this view (maintaining data).</summary>
     public void Redirect<T>(object? parameter = null) where T : ViewModel, new() =>
@@ -32,10 +35,12 @@ public abstract partial class ViewModel : ObservableValidator
             return this;
         isInitialized = true;
 
-        this.Parameter = parameter;
+        this.RedirectParameter = parameter;
         this.IsRedirect = isRedirect;
         this.redirect = redirect;
         this.goBackCallback = goBackCallback;
+
+        OnOpen();
 
         return this;
 
@@ -49,17 +54,14 @@ public abstract partial class ViewModel : ObservableValidator
 
     [ObservableProperty] private bool m_isBusy;
 
-    protected async void DoActionWithLoadingScreen(Func<Task> task)
+    protected async Task DoActionWithLoadingScreen(Func<Task> task)
     {
 
         IsBusy = true;
+
         await Task.Delay(100);
-
-        var t = task.Invoke();
-
-        if (t.Status == TaskStatus.WaitingToRun)
-            t.Start();
-        await t;
+        await task.Invoke();
+        await Task.Delay(100);
 
         IsBusy = false;
 

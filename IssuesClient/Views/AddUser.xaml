@@ -7,30 +7,10 @@
     <DataTemplate DataType="{x:Type viewModels:AddUser}">
 
         <DataTemplate.Resources>
-            
+
             <Style TargetType="TextBlock">
                 <Setter Property="Margin" Value="0,12,0,6"/>
             </Style>
-
-            <!--<Style TargetType="wpfui:TextBox" BasedOn="{StaticResource {x:Type wpfui:TextBox}}">
-
-                <Setter Property="Validation.ErrorTemplate">
-                    <Setter.Value>
-                        <ControlTemplate>
-                            <Popup PlacementTarget="">
-                                
-                            </Popup>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-                
-            </Style>-->
-
-            <DataTemplate DataType="{x:Type ValidationError}">
-                <Border Background="Red" CornerRadius="4" Margin="0,8,0,0">
-                    <TextBlock Text="{Binding ErrorContent}" Foreground="White" Margin="4"/>
-                </Border>
-            </DataTemplate>
             
         </DataTemplate.Resources>
 
@@ -49,7 +29,6 @@
             <StackPanel>
 
                 <wpfui:Card VerticalAlignment="Top">
-
                     <StackPanel Margin="0,-12,0,0">
 
                         <TextBlock Text="Email address:"/>
@@ -62,19 +41,9 @@
                         <wpfui:TextBox Text="{Binding LastName, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
 
                         <TextBlock Text="Phone number:"/>
-                        <wpfui:TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}">
-                            <Validation.ErrorTemplate>
-                                <ControlTemplate>
-                                    <Border Background="Firebrick" Width="{TemplateBinding Width}" Height="100"/>
-                                </ControlTemplate>
-                            </Validation.ErrorTemplate>
-                        </wpfui:TextBox>
-
-                        <TextBlock Text="Password:"/>
-                        <wpfui:TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
+                        <wpfui:TextBox Text="{Binding PhoneNumber, UpdateSourceTrigger=PropertyChanged, NotifyOnValidationError=True}"/>
 
                     </StackPanel>
-
                 </wpfui:Card>
 
                 <Border Background="Red" CornerRadius="8" Margin="0,12,0,0" Common.IsVisible="{Binding HasErrors}">

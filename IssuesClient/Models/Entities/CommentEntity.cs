@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace IssuesClient.Models.Entities;
@@ -7,23 +6,25 @@ namespace IssuesClient.Models.Entities;
 public class CommentEntity
 {
 
-    [Required] public Guid Id { get; set; } = Guid.NewGuid();
-    public bool IsRemoved { get; set; }
+    [Required] public Guid Id { get; set; }
 
     [Required] public string Content { get; set; } = null!;
-
-    [Required] public Guid UserId { get; set; }
-    public UserEntity User { get; set; } = null!;
-
-    public ICollection<ReportEntity> Reports { get; set; } = new HashSet<ReportEntity>();
+    [Required] public DateTime Created { get; set; }
 
     public static implicit operator Comment(CommentEntity entity) =>
         new()
         {
             Id = entity.Id,
             Content = entity.Content,
-            User = entity.User,
-            IsRemoved = entity.IsRemoved,
+            Created = entity.Created,
+        };
+
+    public static implicit operator CommentEntity(Comment model) =>
+        new()
+        {
+            Id = model.Id,
+            Content = model.Content,
+            Created = model.Created,
         };
 
 }

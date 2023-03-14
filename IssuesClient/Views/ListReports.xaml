@@ -8,22 +8,36 @@
 
         <DockPanel>
 
-            <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Margin="0,0,-4,0">
-                <wpfui:Button Icon="CommentAdd48" ToolTip="Add new issue..."/>
-            </StackPanel>
-
-            <ListBox>
-
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:Report}">
-                        <wpfui:CardExpander Header="{Binding Title}">
-                            
-                        </wpfui:CardExpander>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-                
-            </ListBox>
+            <wpfui:Card DockPanel.Dock="Bottom" Margin="0,12" Padding="0">
+                <StackPanel DockPanel.Dock="Bottom" HorizontalAlignment="Right" Orientation="Horizontal">
+                    <wpfui:Button Icon="ArrowClockwise48" ToolTip="Reload list..." Command="{Binding ReloadCommand}"/>
+                    <wpfui:Button Icon="CommentAdd48" ToolTip="Add new issue..." Command="{Binding AddReportCommand}"/>
+                </StackPanel>
+            </wpfui:Card>
             
+            <wpfui:Card VerticalAlignment="Stretch" VerticalContentAlignment="Top" Padding="0">
+                <ScrollViewer>
+                    <Border Margin="12,12,12,0">
+                        <ItemsControl ItemsSource="{Binding Reports}">
+
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:Report}">
+                                    <wpfui:Button FontSize="14" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,0,0,12"
+                                                  Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Path=DataContext.ViewReportCommand}">
+                                        <TextBlock>
+                                            <Run Text="{Binding Title}"/>
+                                            <LineBreak/>
+                                            <TextBlock Text="{Binding User.EmailAddress}" Foreground="Gray"/>
+                                        </TextBlock>
+                                    </wpfui:Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+
+                        </ItemsControl>
+                    </Border>
+                </ScrollViewer>
+            </wpfui:Card>
+
         </DockPanel>
         
     </DataTemplate>

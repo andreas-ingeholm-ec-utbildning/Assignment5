@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using IssuesClient.Services;
 
 namespace IssuesClient.Models.Entities;
 
@@ -15,26 +16,37 @@ public enum ReportStatus
 public class ReportEntity
 {
 
-    [Required]
-    public Guid Id { get; set; } = Guid.NewGuid();
+    [Required] public Guid Id { get; set; }
 
-    [Required]
-    public ReportStatus Status { get; set; }
+    [Required] public string Title { get; set; } = null!;
+    [Required] public ReportStatus Status { get; set; }
+    [Required] public DateTime Created { get; set; }
 
-    [Required]
-    [ForeignKey("Comments")]
-    public IEnumerable<CommentEntity> CommentIds { get; set; } = null!;
+    [Required] public UserProfileEntity User { get; set; } = null!;
+    [Required] public List<CommentEntity> Comments { get; set; } = null!;
 
-    [Required]
-    public UserEntity User { get; set; } = null!;
-
-    public static implicit operator Report(ReportEntity entity) =>
-        new()
+    public static implicit operator Report?(ReportEntity? entity) =>
+        entity is null
+        ? null
+        : new()
         {
             Id = entity.Id,
+            Title = entity.Title,
             Status = entity.Status,
-            //Comments = entity.Comments,
-            User = entity.User,
+            Created = entity.Created,
+            User = entity.User!,
+            Comments = entity.Comments.Select(c => (Comment)c).ToList(),
+        };
+
+    public static implicit operator ReportEntity(Report model) =>
+        new()
+        {
+            Id = model.Id,
+            Title = model.Title,
+            Status = model.Status,
+            Created = model.Created,
+            User = DBService.Context.Profiles.Entry(model.User).Entity,
+            Comments = model.Comments.Select(c => (CommentEntity)c).ToList(),
         };
 
 }

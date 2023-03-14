@@ -1,49 +1,87 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IssuesClient.Models;
+using IssuesClient.Services;
 
 namespace IssuesClient.ViewModels;
 
 public partial class ViewReport : ViewModel
 {
 
-    [ObservableProperty] private bool m_isCommentBoxVisible;
-    [ObservableProperty, Required] private string m_comment;
-    [ObservableProperty, Required] private User m_user = null!;
-
-    [RelayCommand]
-    void OpenCommentBox() => IsCommentBoxVisible = true;
-
-    [RelayCommand]
-    void HideCommentBox() => IsCommentBoxVisible = false;
-
-    public override string Title => "Issue browser - " + "Report";
-
-    [RelayCommand]
-    void AddComment()
+    public override void OnOpen()
     {
 
-        if (Parameter is not Report report)
-            throw new InvalidOperationException("Could not find report to add comment to.");
+        ErrorsChanged += AddReport_ErrorsChanged;
+        ValidateAllProperties();
 
-        report.Comments.Add(new() { User = User, Content = Comment });
+        _ = Reload(RedirectParameter as Report);
 
     }
 
+    void AddReport_ErrorsChanged(object? sender, DataErrorsChangedEventArgs e) =>
+        Errors = GetErrors().Select(v => v.ErrorMessage).Where(s => !string.IsNullOrWhiteSpace(s)).OfType<string>().ToArray();
+
+    [ObservableProperty]
+    private string[] m_errors = Array.Empty<string>();
+
+    [ObservableProperty]
+    private Report m_report = null!;
+
+    [NotifyDataErrorInfo]
+    [ObservableProperty]
+    [MinLength(5)]
+    [Required]
+    private string m_comment = null!;
+
+    public override string Title => "Issue browser - Report";
+
     [RelayCommand]
-    void RemoveReport()
+    void AddComment() =>
+       _ = DoActionWithLoadingScreen(async () =>
+       {
+           await ReportService.AddCommentAsync(Report, new() { Content = Comment, Created = DateTime.Now });
+           await Reload();
+       });
+
+    [RelayCommand]
+    async void Remove()
     {
-        //TODO: Support removing report
+        await ReportService.RemoveAsync(Report);
+        GoBack();
     }
 
     [RelayCommand]
-    void RemoveComment(Comment comment)
-    {
-        comment.IsRemoved = true;
-        comment.Content = null;
-        //TODO: Save
-    }
+    Task Reload() =>
+        Reload(null);
+
+    Task Reload(Report? report = null) =>
+      DoActionWithLoadingScreen(async () =>
+      {
+
+          report ??= await ReportService.GetAsync(Report.Id);
+          Comment = "";
+
+          if (report is not null)
+              Report = report;
+          else
+          {
+              _ = MessageBox.Show("Could not open report, please try again.");
+              GoBack();
+          }
+
+      });
+
+    [RelayCommand]
+    void AddUser() =>
+        Redirect<AddUser>();
+
+    public override void OnRedirectDone() =>
+        Reload();
 
 }

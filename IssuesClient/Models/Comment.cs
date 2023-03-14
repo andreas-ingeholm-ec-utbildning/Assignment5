@@ -7,8 +7,7 @@ public class Comment
 
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public User User { get; set; } = null!;
-    public string? Content { get; set; }
-    public bool IsRemoved { get; set; }
+    public string Content { get; set; } = null!;
+    public DateTime Created { get; set; }
 
 }

@@ -19,7 +19,7 @@ public class DataContext : DbContext
 
     public DbSet<UserEntity> Users { get; set; }
     public DbSet<UserProfileEntity> Profiles { get; set; }
-    //public DbSet<ReportEntity> Reports { get; set; }
-    //public DbSet<CommentEntity> Comments { get; set; }
+    public DbSet<ReportEntity> Reports { get; set; }
+    public DbSet<CommentEntity> Comments { get; set; }
 
 }

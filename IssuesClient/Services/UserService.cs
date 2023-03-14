@@ -1,75 +1,48 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
+using System.Linq;
 using System.Threading.Tasks;
 using IssuesClient.Models;
 using IssuesClient.Models.Entities;
+using Microsoft.EntityFrameworkCore;
+using static IssuesClient.Services.DBService;
 
 namespace IssuesClient.Services;
 
-public class UserService : DBService<UserEntity>
+static class UserService
 {
 
-    //TODO: Rewrite services into static services, with no inheritance again, merge UserProfileService into UserService, its too confusing currently
-    //TODO: Delete db and start over again
+    public static int CachedCount { get; private set; }
 
-    public override Task<UserEntity> CreateAsync(UserEntity entity) => throw new NotSupportedException();
-    public override Task Update(UserEntity entity) => throw new NotSupportedException();
-    public override Task Remove(Expression<Func<UserEntity, bool>> predicate) => throw new NotSupportedException();
-
-    public async Task CreateAsync(User model, string password)
+    public static async Task CreateAsync(User user)
     {
-
-        var profileService = new UserProfileService();
-
-        var entity = (UserEntity)model;
-        entity.SetSecurePassword(password);
-
-        _ = await profileService.CreateAsync(new()
-        {
-            Id = model.Id,
-            FirstName = model.FirstName,
-            LastName = model.LastName,
-            PhoneNumber = model.PhoneNumber,
-            User = entity
-        });
-
+        _ = await Context.Profiles.AddAsync(user);
+        _ = await Context.SaveChangesAsync();
     }
 
-    public async Task Update(User entity, string password)
+    public static async Task UpdateAsync(User user)
     {
+        _ = Context.Profiles.Update(user);
+        _ = await Context.SaveChangesAsync();
+    }
 
-        Authenticate(entity, password);
-
-        if (await GetAsync(e => e.Id == entity.Id) is UserEntity existingEntity)
+    public static async Task RemoveAsync(User user)
+    {
+        if (await Context.Profiles.FirstOrDefaultAsync(p => p.Id == user.Id) is UserProfileEntity entity)
         {
-            existingEntity.EmailAddress = entity.EmailAddress;
-            existingEntity.SetSecurePassword(password);
-            await base.Update(existingEntity);
+            _ = Context.Profiles.Remove(entity);
+            _ = await Context.SaveChangesAsync();
         }
-
     }
 
-    public override Task<IEnumerable<UserEntity>> GetAll()
-    {
-        return base.GetAll();
-    }
+    public static async Task<User?> GetAsync(Guid id) =>
+       await Context.Profiles.Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
 
-    public override Task<UserEntity?> GetAsync(Expression<Func<UserEntity, bool>> predicate)
+    public static async Task<IEnumerable<User>> GetAllAsync()
     {
-        return base.GetAsync(predicate);
-    }
-
-    public async Task Remove(UserEntity entity, string password)
-    {
-        //Authenticate(entity, password);
-        await base.Remove(e => e.Id == entity.Id);
-    }
-
-    static void Authenticate(UserEntity entity, string password)
-    {
-        if (!entity.ValidatePassword(password))
-            throw new UnauthorizedAccessException();
+        var list = (await Context.Profiles.Include(p => p.User).ToArrayAsync()).Select(u => (User?)u).OfType<User>().OrderBy(u => u.EmailAddress);
+        CachedCount = list.Count();
+        return list;
     }
 
 }

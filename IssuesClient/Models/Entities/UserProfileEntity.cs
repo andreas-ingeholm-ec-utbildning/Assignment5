@@ -1,12 +1,13 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using IssuesClient.Services;
 
 namespace IssuesClient.Models.Entities;
 
 public class UserProfileEntity
 {
 
-    [Required] public Guid Id { get; set; } = Guid.NewGuid();
+    [Required] public Guid Id { get; set; }
 
     [Required] public string FirstName { get; set; } = null!;
     [Required] public string LastName { get; set; } = null!;
@@ -14,8 +15,10 @@ public class UserProfileEntity
 
     public UserEntity User { get; set; } = null!;
 
-    public static implicit operator User(UserProfileEntity entity) =>
-        new()
+    public static implicit operator User?(UserProfileEntity? entity) =>
+        entity is null
+        ? null
+        : new()
         {
             Id = entity.User.Id,
             EmailAddress = entity.User.EmailAddress,
@@ -31,7 +34,7 @@ public class UserProfileEntity
             FirstName = model.FirstName,
             LastName = model.LastName,
             PhoneNumber = model.PhoneNumber,
-            User = model
+            User = DBService.Context.Users.Entry(model).Entity
         };
 
 }

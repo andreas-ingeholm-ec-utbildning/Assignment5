@@ -15,31 +15,35 @@
                 </StackPanel>
             </wpfui:Card>
 
-            <ItemsControl ItemsSource="{Binding Users}">
+            <wpfui:Card VerticalAlignment="Stretch" VerticalContentAlignment="Top" Padding="0">
+                <ScrollViewer>
+                    <ItemsControl ItemsSource="{Binding Users}" Margin="12,12,12,0">
 
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate DataType="{x:Type models:User}">
-                        <Expander Header="{Binding EmailAddress}" Margin="0,0,0,12">
-                            <StackPanel>
-                                <TextBlock>
-                                    <Run Text="First name:"/><Run Text="{Binding FirstName}"/>
-                                    <LineBreak/>
-                                    <Run Text="Last name:"/><Run Text="{Binding LastName}"/>
-                                    <LineBreak/>
-                                    <Run Text="Email address:"/><Run Text="{Binding EmailAddress}"/>
-                                    <LineBreak/>
-                                    <Run Text="Phone number:"/><Run Text="{Binding PhoneNumber}"/>
-                                    <LineBreak/>
-                                    <TextBlock HorizontalAlignment="Right">
-                                        <Hyperlink Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Path=DataContext.RemoveUserCommand}" CommandParameter="{Binding}">Remove</Hyperlink>
-                                    </TextBlock>
-                                </TextBlock>
-                            </StackPanel>
-                        </Expander>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type models:User}">
+                                <Expander Header="{Binding EmailAddress}" Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <TextBlock>
+                                            <Run Text="First name:"/><Run Text="{Binding FirstName}"/>
+                                            <LineBreak/>
+                                            <Run Text="Last name:"/><Run Text="{Binding LastName}"/>
+                                            <LineBreak/>
+                                            <Run Text="Email address:"/><Run Text="{Binding EmailAddress}"/>
+                                            <LineBreak/>
+                                            <Run Text="Phone number:"/><Run Text="{Binding PhoneNumber}"/>
+                                            <LineBreak/>
+                                            <TextBlock HorizontalAlignment="Right">
+                                                <Hyperlink Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Path=DataContext.RemoveUserCommand}" CommandParameter="{Binding}">Remove</Hyperlink>
+                                            </TextBlock>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </Expander>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
                 
-            </ItemsControl>
+                    </ItemsControl>
+                </ScrollViewer>
+            </wpfui:Card>
 
         </DockPanel>
         

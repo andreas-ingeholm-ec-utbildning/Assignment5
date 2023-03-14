@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IssuesClient.Models;
+using IssuesClient.Services;
 
 namespace IssuesClient.ViewModels;
 
@@ -29,10 +30,9 @@ public partial class ListReports : ViewModel
 
     [RelayCommand]
     void Reload() =>
-        DoActionWithLoadingScreen(async () =>
-        {
-            Reports = Array.Empty<Report>();
-            await Task.Delay(100);
-        });
+        _ = DoActionWithLoadingScreen(async () => Reports = (await ReportService.GetAllAsync()).OrderBy(r => r.Created));
+
+    public override void OnRedirectDone() =>
+        Reload();
 
 }
