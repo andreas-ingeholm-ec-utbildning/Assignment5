@@ -3,6 +3,4 @@
 namespace IssuesClient;
 
 public partial class App : Application
-{
-
-}
+{ }

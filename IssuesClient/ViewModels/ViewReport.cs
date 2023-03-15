@@ -1,7 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,23 +12,41 @@ namespace IssuesClient.ViewModels;
 public partial class ViewReport : ViewModel
 {
 
-    public override void OnOpen()
+    public override string Title =>
+        string.IsNullOrWhiteSpace(Report?.Title)
+        ? "Issue browser"
+        : "Issue browser - " + Report.Title;
+
+    public override void OnOpen(bool comingFromRedirect) =>
+        ReloadWithLoadingScreen(RedirectParameter as Report);
+
+    void ReloadWithLoadingScreen(Report? report = null) =>
+      DoActionWithLoadingScreen(() => Reload(report));
+
+    async Task Reload(Report? report = null)
     {
 
-        ErrorsChanged += AddReport_ErrorsChanged;
-        ValidateAllProperties();
+        report ??= await ReportService.GetAsync(Report.Id);
+        Comment = "";
 
-        _ = Reload(RedirectParameter as Report);
+        if (report is not null)
+        {
+            Report = report;
+            ReportStatus = report.Status;
+            OnPropertyChanged(nameof(HasReportStatusChanged));
+        }
+        else
+        {
+            _ = MessageBox.Show("Could not open report, please try again.");
+            GoBack();
+        }
 
     }
 
-    void AddReport_ErrorsChanged(object? sender, DataErrorsChangedEventArgs e) =>
-        Errors = GetErrors().Select(v => v.ErrorMessage).Where(s => !string.IsNullOrWhiteSpace(s)).OfType<string>().ToArray();
+    #region Properties
 
     [ObservableProperty]
-    private string[] m_errors = Array.Empty<string>();
-
-    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Title))]
     private Report m_report = null!;
 
     [NotifyDataErrorInfo]
@@ -39,11 +55,22 @@ public partial class ViewReport : ViewModel
     [Required]
     private string m_comment = null!;
 
-    public override string Title => "Issue browser - Report";
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasReportStatusChanged))]
+    private ReportStatus m_reportStatus;
+
+    public bool HasReportStatusChanged => ReportStatus != Report?.Status;
+
+    #endregion
+    #region Commands
+
+    [RelayCommand]
+    void ReloadCommand() =>
+        ReloadWithLoadingScreen(null);
 
     [RelayCommand]
     void AddComment() =>
-       _ = DoActionWithLoadingScreen(async () =>
+       DoActionWithLoadingScreen(async () =>
        {
            await ReportService.AddCommentAsync(Report, new() { Content = Comment, Created = DateTime.Now });
            await Reload();
@@ -57,31 +84,17 @@ public partial class ViewReport : ViewModel
     }
 
     [RelayCommand]
-    Task Reload() =>
-        Reload(null);
-
-    Task Reload(Report? report = null) =>
-      DoActionWithLoadingScreen(async () =>
-      {
-
-          report ??= await ReportService.GetAsync(Report.Id);
-          Comment = "";
-
-          if (report is not null)
-              Report = report;
-          else
-          {
-              _ = MessageBox.Show("Could not open report, please try again.");
-              GoBack();
-          }
-
-      });
+    void UpdateStatus() =>
+       DoActionWithLoadingScreen(async () =>
+       {
+           await ReportService.SetStatusAsync(Report, ReportStatus);
+           await Reload();
+       });
 
     [RelayCommand]
     void AddUser() =>
         Redirect<AddUser>();
 
-    public override void OnRedirectDone() =>
-        Reload();
+    #endregion
 
 }

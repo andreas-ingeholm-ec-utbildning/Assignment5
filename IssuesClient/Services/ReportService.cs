@@ -12,7 +12,21 @@ namespace IssuesClient.Services;
 static class ReportService
 {
 
+    /// <summary>Used for filling debug data.</summary>
     public static int CachedCount { get; private set; }
+
+    static ReportService()
+    {
+        Context.ChangeTracker.DetectedEntityChanges += (s, e) =>
+        {
+
+            //Comments are not automatically deleted from db, this appears to solve that
+            if (e.Entry.State == EntityState.Deleted && e.Entry.Entity is ReportEntity report)
+                foreach (var comment in report.Comments)
+                    _ = Context.Comments.Remove(comment);
+
+        };
+    }
 
     public static async Task CreateAsync(Report report)
     {
@@ -39,10 +53,25 @@ static class ReportService
         entity.Comments.Add(comment);
         _ = Context.Reports.Update(entity);
 
+        //User is always detected as changed, for some reason, we'll need to unset that
         Context.Entry(entity.User).State = EntityState.Unchanged;
+
+        //Existing comments are also detected as changed, we'll unset those too
+        //New comment is also not detected as added for some reason
         foreach (var c in entity.Comments)
             Context.Entry(c).State = c.Id != comment.Id ? EntityState.Unchanged : EntityState.Added;
 
+        _ = await Context.SaveChangesAsync();
+
+    }
+
+    public static async Task SetStatusAsync(Report report, ReportStatus status)
+    {
+
+        var entity = Context.Set<ReportEntity>().Local.First(r => r.Id == report.Id);
+        entity.Status = status;
+
+        _ = Context.Reports.Update(entity);
         _ = await Context.SaveChangesAsync();
 
     }
@@ -61,9 +90,16 @@ static class ReportService
 
     public static async Task<IEnumerable<Report>> GetAllAsync()
     {
-        var list = (await Context.Reports.Include(r => r.User).Include(r => r.User.User).Include(r => r.Comments).ToArrayAsync()).Select(r => (Report?)r).OfType<Report>();
+
+        var list =
+            (await Context.Reports.Include(r => r.User).Include(r => r.User.User).Include(r => r.Comments).ToArrayAsync()).
+            Select(r => (Report?)r).
+            OfType<Report>().
+            OrderBy(r => r.Created);
+
         CachedCount = list.Count();
         return list;
+
     }
 
 }

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -9,8 +11,35 @@ public abstract partial class ViewModel : ObservableValidator
 
     public virtual string Title { get; } = "Issue browser";
 
-    public virtual void OnOpen()
+    public virtual void OnOpen(bool comingFromRedirect)
     { }
+
+    public ViewModel Initialize(object? parameter, bool isRedirect, Action<Type, object?> redirect, Action goBackCallback)
+    {
+
+        if (isInitialized)
+            return this;
+        isInitialized = true;
+
+        this.RedirectParameter = parameter;
+        this.IsRedirect = isRedirect;
+        this.redirect = redirect;
+        this.goBackCallback = goBackCallback;
+
+        ErrorsChanged += AddReport_ErrorsChanged;
+        ValidateAllProperties();
+
+        OnOpen(false);
+
+        return this;
+
+    }
+
+    [ObservableProperty]
+    private string[] m_errors = Array.Empty<string>();
+
+    void AddReport_ErrorsChanged(object? sender, DataErrorsChangedEventArgs e) =>
+        Errors = GetErrors().Select(v => v.ErrorMessage).Where(s => !string.IsNullOrWhiteSpace(s)).OfType<string>().ToArray();
 
     #region Redirect
 
@@ -28,33 +57,12 @@ public abstract partial class ViewModel : ObservableValidator
     Action<Type, object?> redirect = null!;
     Action goBackCallback = null!;
 
-    public ViewModel Initialize(object? parameter, bool isRedirect, Action<Type, object?> redirect, Action goBackCallback)
-    {
-
-        if (isInitialized)
-            return this;
-        isInitialized = true;
-
-        this.RedirectParameter = parameter;
-        this.IsRedirect = isRedirect;
-        this.redirect = redirect;
-        this.goBackCallback = goBackCallback;
-
-        OnOpen();
-
-        return this;
-
-    }
-
-    public virtual void OnRedirectDone()
-    { }
-
     #endregion
     #region DoActionWithLoadingScreen
 
     [ObservableProperty] private bool m_isBusy;
 
-    protected async Task DoActionWithLoadingScreen(Func<Task> task)
+    protected async void DoActionWithLoadingScreen(Func<Task> task)
     {
 
         IsBusy = true;

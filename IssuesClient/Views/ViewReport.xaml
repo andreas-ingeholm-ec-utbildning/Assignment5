@@ -3,10 +3,19 @@
                     xmlns:wpfui="http://schemas.lepo.co/wpfui/2022/xaml"
                     xmlns:viewModels="clr-namespace:IssuesClient.ViewModels"
                     xmlns:models="clr-namespace:IssuesClient.Models"
-                    xmlns:converters="clr-namespace:IssuesClient.Converters">
+                    xmlns:converters="clr-namespace:IssuesClient.Converters"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <DataTemplate DataType="{x:Type viewModels:ViewReport}">
 
+        <DataTemplate.Resources>
+            <ObjectDataProvider x:Key="Enum.ReportStatus" MethodName="GetValues" ObjectType="{x:Type sys:Enum}">
+                <ObjectDataProvider.MethodParameters>
+                    <x:Type TypeName="models:ReportStatus"/>
+                </ObjectDataProvider.MethodParameters>
+            </ObjectDataProvider>
+        </DataTemplate.Resources>
+        
         <ScrollViewer>
 
             <StackPanel>
@@ -14,26 +23,41 @@
                 <wpfui:Card>
                     <Grid>
 
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        
                         <TextBlock>
-                            <TextBlock Text="{Binding Report.Title}" FontSize="20"/>
+                            <Run Text="{Binding Report.Title}" FontSize="20"/>
                             <LineBreak/>
-                            <TextBlock Text="{Binding Report.Created, TargetNullValue='[CreatedAt]'}" Foreground="Gray"/>
-                            <LineBreak/>
-                            <Run Text="{Binding Report.Status}" Foreground="Gray"/>
+                            <Run Text="{Binding Report.Created, TargetNullValue='[CreatedAt]'}" Foreground="Gray"/>
                             <LineBreak/>
                             <LineBreak/>
-                            <TextBlock Text="{Binding Report.User.EmailAddress, TargetNullValue='[EmailAddress]'}" Foreground="Gray"/>
+                            <Run Text="{Binding Report.User.EmailAddress, TargetNullValue='[EmailAddress]'}" Foreground="Gray"/>
                             <LineBreak/>
-                            <TextBlock Text="{Binding Report.User.FirstName, TargetNullValue='[FirstName]'}" Foreground="Gray"/>
-                            <TextBlock Text="{Binding Report.User.LastName, TargetNullValue='[LastName]'}" Foreground="Gray"/>
+                            <Run Text="{Binding Report.User.FirstName, TargetNullValue='[FirstName]'}" Foreground="Gray"/>
+                            <Run Text="{Binding Report.User.LastName, TargetNullValue='[LastName]'}" Foreground="Gray"/>
                             <LineBreak/>
-                            <TextBlock Text="{Binding Report.User.PhoneNumber, TargetNullValue='[PhoneNumber]'}" Foreground="Gray"/>
-                            <LineBreak/>
-                            <LineBreak/>
-                            <Hyperlink Command="{Binding RemoveCommand}">Remove</Hyperlink>
+                            <Run Text="{Binding Report.User.PhoneNumber, TargetNullValue='[PhoneNumber]'}" Foreground="Gray"/>
                         </TextBlock>
 
-                        <wpfui:Button Icon="ArrowClockwise48" ToolTip="Reload..." Command="{Binding ReloadCommand}" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="16"/>
+                        <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,0,-4">
+                            <Hyperlink Command="{Binding RemoveCommand}">Remove report...</Hyperlink>
+                        </TextBlock>
+
+                        <StackPanel Grid.Row="1" Margin="0,22,0,0" VerticalAlignment="Bottom" HorizontalAlignment="Left" Orientation="Horizontal">
+                            <ComboBox ItemsSource="{Binding Source={StaticResource Enum.ReportStatus}}" SelectedItem="{Binding ReportStatus, Mode=TwoWay}" x:Name="statusField"/>
+                            <wpfui:Button Icon="Checkmark48" Command="{Binding UpdateStatusCommand}" Common.IsVisible="{Binding HasReportStatusChanged, Mode=OneWay}" ToolTip="Apply..." Margin="6,0,0,0"
+                                          Height="{Binding ElementName=statusField, Path=ActualHeight}" Width="{Binding RelativeSource={RelativeSource Mode=Self}, Path=ActualHeight}" Padding="0"/>
+                        </StackPanel>
+                            
+                        <wpfui:Button Grid.Column="1" Icon="ArrowClockwise48" ToolTip="Reload..." Command="{Binding ReloadCommandCommand}" HorizontalAlignment="Right" VerticalAlignment="Top" FontSize="16"/>
                         
                     </Grid>
                 </wpfui:Card>
@@ -55,7 +79,7 @@
 
                 <wpfui:Card Margin="0,12">
                     <DockPanel>
-                        <wpfui:Button DockPanel.Dock="Right" Icon="Send28" HorizontalAlignment="Right" Height="Auto" VerticalAlignment="Stretch" Margin="12,0,0,0" Command="{Binding AddCommentCommand}" IsEnabled="{Binding HasErrors, Converter={converters:InvertBool}}"/>
+                        <wpfui:Button DockPanel.Dock="Right" Icon="Send28" HorizontalAlignment="Right" Height="Auto" VerticalAlignment="Stretch" Margin="12,0,0,0" Command="{Binding AddCommentCommand}" IsEnabled="{Binding HasErrors, Converter={converters:InvertBool}}" ToolTip="Add comment..."/>
                         <TextBox AcceptsReturn="True" AcceptsTab="True" Text="{Binding Comment, Mode=TwoWay, NotifyOnValidationError=True, UpdateSourceTrigger=PropertyChanged}" Validation.ErrorTemplate="{x:Null}"/>
                     </DockPanel>
                 </wpfui:Card>

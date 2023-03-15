@@ -6,13 +6,6 @@ using IssuesClient.Services;
 
 namespace IssuesClient.Models.Entities;
 
-public enum ReportStatus
-{
-    Pending,
-    InProgress,
-    Completed
-}
-
 public class ReportEntity
 {
 
@@ -45,7 +38,7 @@ public class ReportEntity
             Title = model.Title,
             Status = model.Status,
             Created = model.Created,
-            User = DBService.Context.Profiles.Entry(model.User).Entity,
+            User = UserService.GetProfileEntity(model.User),
             Comments = model.Comments.Select(c => (CommentEntity)c).ToList(),
         };
 

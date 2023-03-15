@@ -22,6 +22,21 @@ namespace IssuesClient.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CommentEntityReportEntity", b =>
+                {
+                    b.Property<Guid>("CommentsId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ReportsId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("CommentsId", "ReportsId");
+
+                    b.HasIndex("ReportsId");
+
+                    b.ToTable("CommentEntityReportEntity");
+                });
+
             modelBuilder.Entity("IssuesClient.Models.Entities.CommentEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -35,12 +50,7 @@ namespace IssuesClient.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid?>("ReportEntityId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ReportEntityId");
 
                     b.ToTable("Comments");
                 });
@@ -114,11 +124,19 @@ namespace IssuesClient.Migrations
                     b.ToTable("Profiles");
                 });
 
-            modelBuilder.Entity("IssuesClient.Models.Entities.CommentEntity", b =>
+            modelBuilder.Entity("CommentEntityReportEntity", b =>
                 {
+                    b.HasOne("IssuesClient.Models.Entities.CommentEntity", null)
+                        .WithMany()
+                        .HasForeignKey("CommentsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("IssuesClient.Models.Entities.ReportEntity", null)
-                        .WithMany("Comments")
-                        .HasForeignKey("ReportEntityId");
+                        .WithMany()
+                        .HasForeignKey("ReportsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("IssuesClient.Models.Entities.ReportEntity", b =>
@@ -141,11 +159,6 @@ namespace IssuesClient.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("IssuesClient.Models.Entities.ReportEntity", b =>
-                {
-                    b.Navigation("Comments");
                 });
 
             modelBuilder.Entity("IssuesClient.Models.Entities.UserEntity", b =>

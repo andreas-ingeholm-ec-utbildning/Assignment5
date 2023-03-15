@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using IssuesClient.Models.Entities;
 
 namespace IssuesClient.Models;
+
+public enum ReportStatus
+{
+    Pending,
+    InProgress,
+    Completed
+}
 
 public class Report
 {

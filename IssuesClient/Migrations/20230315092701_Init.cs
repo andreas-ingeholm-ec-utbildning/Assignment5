@@ -12,6 +12,19 @@ namespace IssuesClient.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "Comments",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Created = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Comments", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Users",
                 columns: table => new
                 {
@@ -66,28 +79,33 @@ namespace IssuesClient.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comments",
+                name: "CommentEntityReportEntity",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Created = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ReportEntityId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                    CommentsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ReportsId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.PrimaryKey("PK_CommentEntityReportEntity", x => new { x.CommentsId, x.ReportsId });
                     table.ForeignKey(
-                        name: "FK_Comments_Reports_ReportEntityId",
-                        column: x => x.ReportEntityId,
+                        name: "FK_CommentEntityReportEntity_Comments_CommentsId",
+                        column: x => x.CommentsId,
+                        principalTable: "Comments",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_CommentEntityReportEntity_Reports_ReportsId",
+                        column: x => x.ReportsId,
                         principalTable: "Reports",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comments_ReportEntityId",
-                table: "Comments",
-                column: "ReportEntityId");
+                name: "IX_CommentEntityReportEntity_ReportsId",
+                table: "CommentEntityReportEntity",
+                column: "ReportsId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Profiles_UserId",
@@ -103,6 +121,9 @@ namespace IssuesClient.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "CommentEntityReportEntity");
+
             migrationBuilder.DropTable(
                 name: "Comments");
 

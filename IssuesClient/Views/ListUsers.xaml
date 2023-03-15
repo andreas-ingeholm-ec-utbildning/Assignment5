@@ -24,13 +24,17 @@
                                 <Expander Header="{Binding EmailAddress}" Margin="0,0,0,12">
                                     <StackPanel>
                                         <TextBlock>
-                                            <Run Text="First name:"/><Run Text="{Binding FirstName}"/>
+                                            <Run Text="First name:"/>
+                                            <Run Text="{Binding FirstName}"/>
                                             <LineBreak/>
-                                            <Run Text="Last name:"/><Run Text="{Binding LastName}"/>
+                                            <Run Text="Last name:"/>
+                                            <Run Text="{Binding LastName}"/>
                                             <LineBreak/>
-                                            <Run Text="Email address:"/><Run Text="{Binding EmailAddress}"/>
+                                            <Run Text="Email address:"/>
+                                            <Run Text="{Binding EmailAddress}"/>
                                             <LineBreak/>
-                                            <Run Text="Phone number:"/><Run Text="{Binding PhoneNumber}"/>
+                                            <Run Text="Phone number:"/>
+                                            <Run Text="{Binding PhoneNumber}"/>
                                             <LineBreak/>
                                             <TextBlock HorizontalAlignment="Right">
                                                 <Hyperlink Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Path=DataContext.RemoveUserCommand}" CommandParameter="{Binding}">Remove</Hyperlink>

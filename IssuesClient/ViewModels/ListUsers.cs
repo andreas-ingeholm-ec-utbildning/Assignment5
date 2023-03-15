@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IssuesClient.Models;
@@ -13,29 +12,24 @@ public partial class ListUsers : ViewModel
 
     public override string Title => "Issue browser - Users";
 
-    public ListUsers() =>
-       _ = Reload();
+    public override void OnOpen(bool comingFromRedirect) =>
+        Reload();
 
     [ObservableProperty]
     private IEnumerable<User> m_users = Array.Empty<User>();
 
     [RelayCommand]
-    void AddUser() =>
-        Redirect<AddUser>();
+    void Reload() => DoActionWithLoadingScreen(async () => Users = await UserService.GetAllAsync());
 
     [RelayCommand]
-    Task Reload() =>
-      DoActionWithLoadingScreen(async () => Users = (await UserService.GetAllAsync()));
+    void AddUser() => Redirect<AddUser>();
 
     [RelayCommand]
     void RemoveUser(User user) =>
-        _ = DoActionWithLoadingScreen(async () =>
+        DoActionWithLoadingScreen(async () =>
         {
             await UserService.RemoveAsync(user);
-            await Reload();
+            Users = await UserService.GetAllAsync();
         });
-
-    public override void OnRedirectDone() =>
-        _ = Reload();
 
 }

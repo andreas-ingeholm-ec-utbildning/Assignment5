@@ -17,18 +17,26 @@
             
             <wpfui:Card VerticalAlignment="Stretch" VerticalContentAlignment="Top" Padding="0">
                 <ScrollViewer>
-                    <Border Margin="12,12,12,0">
+                    <Border Margin="12,14,0,0">
                         <ItemsControl ItemsSource="{Binding Reports}">
 
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate DataType="{x:Type models:Report}">
-                                    <wpfui:Button FontSize="14" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Margin="0,0,0,12"
+                                    <wpfui:Button FontSize="14" HorizontalAlignment="Stretch" Margin="0,0,0,12" HorizontalContentAlignment="Stretch" 
                                                   Command="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ItemsControl}, Path=DataContext.ViewReportCommand}">
-                                        <TextBlock>
-                                            <Run Text="{Binding Title}"/>
-                                            <LineBreak/>
-                                            <TextBlock Text="{Binding User.EmailAddress}" Foreground="Gray"/>
-                                        </TextBlock>
+
+                                        <DockPanel>
+
+                                            <TextBlock Text="{Binding Status}" DockPanel.Dock="Right" VerticalAlignment="Center" Foreground="Gray"/>
+
+                                            <TextBlock>
+                                                <Run Text="{Binding Title}"/>
+                                                <LineBreak/>
+                                                <TextBlock Text="{Binding User.EmailAddress}" Foreground="Gray"/>
+                                            </TextBlock>
+                                        
+                                        </DockPanel>
+                                        
                                     </wpfui:Button>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

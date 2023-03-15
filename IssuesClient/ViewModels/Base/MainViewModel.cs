@@ -38,7 +38,7 @@ public partial class MainViewModel : ObservableObject
         if (redirectCallers.TryPop(out var viewModel))
         {
             OpenInternal(viewModel);
-            viewModel.OnRedirectDone();
+            viewModel.OnOpen(true);
         }
         else
             OpenDefault();

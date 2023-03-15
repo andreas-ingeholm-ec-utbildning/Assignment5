@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,20 +11,15 @@ namespace IssuesClient.ViewModels;
 public partial class AddReport : ViewModel
 {
 
-    public AddReport()
-    {
-        ErrorsChanged += AddReport_ErrorsChanged;
-        ValidateAllProperties();
-        ReloadUsers();
-    }
-
-    void AddReport_ErrorsChanged(object? sender, DataErrorsChangedEventArgs e) =>
-        Errors = GetErrors().Select(v => v.ErrorMessage).Where(s => !string.IsNullOrWhiteSpace(s)).OfType<string>().ToArray();
-
-    [ObservableProperty]
-    private string[] m_errors = Array.Empty<string>();
-
     public override string Title => "Issue browser - Add report";
+
+    public override void OnOpen(bool comingFromRedirect) =>
+        ReloadUsers();
+
+    void ReloadUsers() =>
+        DoActionWithLoadingScreen(async () => Users = (await UserService.GetAllAsync()).ToArray());
+
+    #region Properties
 
     [ObservableProperty] private User[] m_users = Array.Empty<User>();
 
@@ -46,8 +40,8 @@ public partial class AddReport : ViewModel
     [MinLength(5, ErrorMessage = "Comment must be at least 5 characters long.")]
     private string m_comment = null!;
 
-    void ReloadUsers() =>
-        _ = DoActionWithLoadingScreen(async () => Users = (await UserService.GetAllAsync()).ToArray());
+    #endregion
+    #region Commands
 
     [RelayCommand]
     async void Add()
@@ -83,7 +77,6 @@ public partial class AddReport : ViewModel
     void AddUser() =>
         Redirect<AddUser>();
 
-    public override void OnRedirectDone() =>
-        ReloadUsers();
+    #endregion
 
 }

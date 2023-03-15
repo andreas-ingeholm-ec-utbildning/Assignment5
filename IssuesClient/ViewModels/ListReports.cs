@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using IssuesClient.Models;
@@ -11,8 +10,10 @@ namespace IssuesClient.ViewModels;
 public partial class ListReports : ViewModel
 {
 
-    public ListReports() =>
+    public override void OnOpen(bool comingFromRedirect) =>
         Reload();
+
+    #region Properties
 
     [ObservableProperty]
     private IEnumerable<Report> m_reports = Array.Empty<Report>();
@@ -20,19 +21,18 @@ public partial class ListReports : ViewModel
     [ObservableProperty]
     private int m_selectedIndex;
 
-    [RelayCommand]
-    void AddReport() =>
-        Redirect<AddReport>();
+    #endregion
+    #region Commands
 
     [RelayCommand]
-    void ViewReport(Report report) =>
-        Redirect<ViewReport>(report);
+    void AddReport() => Redirect<AddReport>();
 
     [RelayCommand]
-    void Reload() =>
-        _ = DoActionWithLoadingScreen(async () => Reports = (await ReportService.GetAllAsync()).OrderBy(r => r.Created));
+    void ViewReport(Report report) => Redirect<ViewReport>(report);
 
-    public override void OnRedirectDone() =>
-        Reload();
+    [RelayCommand]
+    void Reload() => DoActionWithLoadingScreen(async () => Reports = await ReportService.GetAllAsync());
+
+    #endregion
 
 }

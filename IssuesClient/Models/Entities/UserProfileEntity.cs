@@ -34,7 +34,7 @@ public class UserProfileEntity
             FirstName = model.FirstName,
             LastName = model.LastName,
             PhoneNumber = model.PhoneNumber,
-            User = DBService.Context.Users.Entry(model).Entity
+            User = UserService.GetUserEntity(model)
         };
 
 }

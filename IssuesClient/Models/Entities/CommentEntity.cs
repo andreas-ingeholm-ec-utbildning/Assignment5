@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace IssuesClient.Models.Entities;
@@ -10,6 +11,8 @@ public class CommentEntity
 
     [Required] public string Content { get; set; } = null!;
     [Required] public DateTime Created { get; set; }
+
+    public ICollection<ReportEntity> Reports { get; set; } = new HashSet<ReportEntity>();
 
     public static implicit operator Comment(CommentEntity entity) =>
         new()
