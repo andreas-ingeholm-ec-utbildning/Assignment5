@@ -1,3 +1,3 @@
 # Assignment5
 
-SQL + C# + WPF.
+SQL + Entity framework + C# + WPF.
